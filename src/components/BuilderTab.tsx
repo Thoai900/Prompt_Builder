@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { AVAILABLE_BLOCKS, BLOCK_SUGGESTIONS } from '../data';
 import { PromptBlock, PromptTemplate, AiPersona } from '../types';
-import { GripVertical, Plus, Trash2, Copy, Check, X, Layers, Save, Sparkles, Wand2, Square, ChevronDown, AlignLeft, Minimize2, Briefcase, Smile, Menu, ChevronRight, User, Pin, SplitSquareHorizontal } from 'lucide-react';
-import { generateAutoBlockStream, autoFillVariables, type AiActionType } from '../services/aiService';
+import { GripVertical, Plus, Trash2, Copy, Check, X, Layers, Save, Sparkles, Wand2, Square, ChevronDown, AlignLeft, Minimize2, Briefcase, Smile, Menu, ChevronRight, User, Pin, SplitSquareHorizontal, Image as ImageIcon, Upload, Loader2 } from 'lucide-react';
+import { generateAutoBlockStream, autoFillVariables, generateContentForExistingBlocks, generatePromptFromImage, type AiActionType } from '../services/aiService';
 
 interface BuilderTabProps {
   initialTemplate: PromptTemplate | null;
@@ -17,10 +17,14 @@ const TYPE_STYLES: Record<string, { badge: string, border: string }> = {
   role: { badge: 'text-blue-700 bg-blue-50 ring-blue-500/30', border: 'border-l-blue-500' },
   task: { badge: 'text-orange-700 bg-orange-50 ring-orange-500/30', border: 'border-l-orange-500' },
   context: { badge: 'text-emerald-700 bg-emerald-50 ring-emerald-500/30', border: 'border-l-emerald-500' },
+  input_data: { badge: 'text-indigo-700 bg-indigo-50 ring-indigo-500/30', border: 'border-l-indigo-500' },
+  thinking: { badge: 'text-amber-700 bg-amber-50 ring-amber-500/30', border: 'border-l-amber-500' },
   format: { badge: 'text-purple-700 bg-purple-50 ring-purple-500/30', border: 'border-l-purple-500' },
   tone: { badge: 'text-pink-700 bg-pink-50 ring-pink-500/30', border: 'border-l-pink-500' },
   constraints: { badge: 'text-rose-700 bg-rose-50 ring-rose-500/30', border: 'border-l-rose-500' },
   example: { badge: 'text-cyan-700 bg-cyan-50 ring-cyan-500/30', border: 'border-l-cyan-500' },
+  self_correction: { badge: 'text-fuchsia-700 bg-fuchsia-50 ring-fuchsia-500/30', border: 'border-l-fuchsia-500' },
+  anchor: { badge: 'text-teal-700 bg-teal-50 ring-teal-500/30', border: 'border-l-teal-500' },
 };
 
 export default function BuilderTab({ initialTemplate, personas, activePersonaId, setActivePersonaId, onSaveTemplate }: BuilderTabProps) {
@@ -43,6 +47,18 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
   const [generatingBlocks, setGeneratingBlocks] = useState<Record<string, boolean>>({});
   const [detailLevel, setDetailLevel] = useState<number>(3);
   const [openAiMenuId, setOpenAiMenuId] = useState<string | null>(null);
+
+  // Quick prompt states
+  const [isQuickPromptModalOpen, setIsQuickPromptModalOpen] = useState(false);
+  const [quickPromptTopic, setQuickPromptTopic] = useState('');
+  const [quickPromptFramework, setQuickPromptFramework] = useState('claude_xmd');
+  const [isGeneratingQuickPrompt, setIsGeneratingQuickPrompt] = useState(false);
+
+  // Image to prompt states
+  const [isImagePromptModalOpen, setIsImagePromptModalOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageMime, setSelectedImageMime] = useState<string | null>(null);
+  const [isGeneratingFromImage, setIsGeneratingFromImage] = useState(false);
 
   // Auto-fill and profile states
   const [isAutoFilling, setIsAutoFilling] = useState(false);
@@ -196,6 +212,10 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
     setBlocks(blocks.filter(b => b.id !== id));
   };
 
+  const togglePin = (id: string) => {
+    setBlocks(prev => prev.map(b => b.id === id ? { ...b, isPinned: !b.isPinned } : b));
+  };
+
   const updateBlockContent = (id: string, content: string) => {
     setBlocks(blocks.map(b => b.id === id ? { ...b, content } : b));
   };
@@ -237,6 +257,86 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
     }
   };
 
+  const handleGenerateQuickPrompt = async () => {
+    if (!quickPromptTopic.trim() || blocks.length === 0) return;
+    setIsGeneratingQuickPrompt(true);
+    
+    try {
+      const blocksInfo = blocks.map(b => ({ id: b.id, type: b.type, title: b.title }));
+      const resultObj = await generateContentForExistingBlocks(quickPromptTopic, blocksInfo);
+      
+      setBlocks(prevBlocks => prevBlocks.map(b => {
+        if (resultObj[b.id]) {
+          return { ...b, content: resultObj[b.id] };
+        }
+        return b;
+      }));
+      
+      const expandState: Record<string, boolean> = {};
+      blocks.forEach(b => {
+        if (resultObj[b.id]) expandState[b.id] = true;
+      });
+      setExpandedBlocks(prev => ({ ...prev, ...expandState }));
+      setIsQuickPromptModalOpen(false);
+      setQuickPromptTopic('');
+    } catch (e) {
+      console.error(e);
+      alert("Đã có lỗi xảy ra khi tự động điền. Vui lòng thử lại.");
+    } finally {
+      setIsGeneratingQuickPrompt(false);
+    }
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Vui lòng chọn một tệp hình ảnh (JPEG, PNG, WebP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      const base64Data = result.split(',')[1];
+      setSelectedImage(base64Data);
+      setSelectedImageMime(file.type);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleGenerateFromImage = async () => {
+    if (!selectedImage || !selectedImageMime || blocks.length === 0) return;
+    setIsGeneratingFromImage(true);
+    
+    try {
+      const blocksInfo = blocks.map(b => ({ id: b.id, type: b.type, title: b.title }));
+      const resultObj = await generatePromptFromImage(selectedImage, selectedImageMime, blocksInfo);
+      
+      setBlocks(prevBlocks => prevBlocks.map(b => {
+        if (resultObj[b.id]) {
+          return { ...b, content: resultObj[b.id] };
+        }
+        return b;
+      }));
+      
+      const expandState: Record<string, boolean> = {};
+      blocks.forEach(b => {
+        if (resultObj[b.id]) expandState[b.id] = true;
+      });
+      setExpandedBlocks(prev => ({ ...prev, ...expandState }));
+      setIsImagePromptModalOpen(false);
+      setSelectedImage(null);
+      setSelectedImageMime(null);
+    } catch (e) {
+      console.error(e);
+      alert("Đã có lỗi xảy ra khi phân tích hình ảnh. Vui lòng thử lại.");
+    } finally {
+      setIsGeneratingFromImage(false);
+    }
+  };
+
   const generatePromptText = (raw = false) => {
     return blocks.filter(b => b.content.trim() !== '').map(b => `### ${b.title}\n${raw ? b.content : injectVariables(b.content)}`).join('\n\n');
   };
@@ -252,9 +352,9 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
       if (b.content.trim() === '') return '';
       let result = '';
       if (isRaw) {
-        result += `[${b.title.split(' ')[0]}]\n${b.content}\n\n`;
+        result += `[${b.title}]\n${b.content}\n\n`;
       } else {
-        result += `[${b.title.split(' ')[0]}]\n${injectVariables(b.content)}\n\n`;
+        result += `[${b.title}]\n${injectVariables(b.content)}\n\n`;
       }
       return result;
     }
@@ -357,6 +457,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
   };
 
   const FRAMEWORKS = [
+    { id: 'claude_xmd', name: 'Claude Pro XMD', blocks: ['role', 'task', 'input_data', 'thinking', 'format', 'constraints', 'self_correction', 'anchor'] },
     { id: 'costar', name: 'CO-STAR Framework', blocks: ['context', 'task', 'tone', 'context', 'format'] },
     { id: 'rtf', name: 'RTF Framework', blocks: ['role', 'task', 'format'] },
     { id: 'race', name: 'RACE Framework', blocks: ['role', 'task', 'context', 'format'] },
@@ -385,17 +486,19 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
     if (blocks.length === 0) return { score: 0, msg: '' };
     const hasRole = blocks.some(b => b.type === 'role');
     const hasTask = blocks.some(b => b.type === 'task');
-    const hasContext = blocks.some(b => b.type === 'context');
+    const hasContextOrInput = blocks.some(b => b.type === 'context' || b.type === 'input_data');
     const hasFormat = blocks.some(b => b.type === 'format');
+    const hasThinking = blocks.some(b => b.type === 'thinking');
     
-    let score = 50;
+    let score = 30;
     let missing = [];
     if (hasRole) score += 10; else missing.push('Vai trò');
     if (hasTask) score += 20; else missing.push('Nhiệm vụ');
-    if (hasContext) score += 10; else missing.push('Ngữ cảnh');
+    if (hasContextOrInput) score += 10; else missing.push('Ngữ cảnh/Dữ liệu');
     if (hasFormat) score += 10; else missing.push('Format');
+    if (hasThinking) score += 20; else missing.push('Suy luận');
     
-    let msg = score === 100 ? 'Tuyệt vời, prompt rất chuẩn!' : `Gợi ý thêm: ${missing.join(', ')}`;
+    let msg = score >= 90 ? 'Tuyệt vời, prompt rất chuẩn!' : `Gợi ý thêm: ${missing.join(', ')}`;
     return { score, msg };
   };
   const { score, msg } = getPromptScore();
@@ -491,6 +594,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
                 className="flex-1 overflow-y-auto p-4 space-y-2"
               >
                 {AVAILABLE_BLOCKS.map((block, index) => (
+                  // @ts-ignore
                   <Draggable key={block.type} draggableId={`available-${block.type}`} index={index}>
                     {(provided, snapshot) => (
                       <div
@@ -539,6 +643,18 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
               </div>
             </div>
             <div className="flex items-center gap-3">
+               <button 
+                 onClick={() => setIsImagePromptModalOpen(true)}
+                 className="flex items-center gap-2 bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300 px-3 py-1.5 rounded text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
+               >
+                 <ImageIcon size={16} /> Quét Ảnh
+               </button>
+               <button 
+                 onClick={() => setIsQuickPromptModalOpen(true)}
+                 className="flex items-center gap-2 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white px-3 py-1.5 rounded text-sm font-semibold shadow-sm transition-all whitespace-nowrap"
+               >
+                 <Sparkles size={16} /> Tạo nhanh
+               </button>
                {personas && personas.length > 0 && (
                   <select 
                     value={activePersonaId} 
@@ -613,6 +729,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
                     const isExpanded = expandedBlocks[block.id];
 
                     return (
+                      // @ts-ignore
                       <Draggable key={block.id} draggableId={block.id} index={index}>
                         {(provided, snapshot) => (
                           <div
@@ -648,7 +765,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
                                  >
                                      <ChevronDown size={14} className={`text-slate-400 transition-transform ${isExpanded ? '' : '-rotate-90'}`} />
                                      <span className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded ring-1 ring-inset whitespace-nowrap ${style.badge}`}>
-                                       {block.title.split(' ')[0]}
+                                       {block.title}
                                      </span>
                                      {!isExpanded && block.content && (
                                        <span className="text-xs text-slate-400 truncate max-w-[80px] sm:max-w-[120px] ml-1">{block.content}</span>
@@ -685,6 +802,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
                                                 <button onClick={(e) => { e.stopPropagation(); handleAiAssist(block, 'shorter'); }} className="flex items-center gap-2 px-4 lg:px-3 py-3 lg:py-2 text-[13px] lg:text-xs text-slate-700 hover:bg-slate-50 border-b border-slate-100 text-left touch-manipulation min-h-[44px]"><Minimize2 size={14} className="text-rose-500"/> Rút gọn súc tích</button>
                                                 <button onClick={(e) => { e.stopPropagation(); handleAiAssist(block, 'professional'); }} className="flex items-center gap-2 px-4 lg:px-3 py-3 lg:py-2 text-[13px] lg:text-xs text-slate-700 hover:bg-slate-50 text-left touch-manipulation min-h-[44px]"><Briefcase size={14} className="text-blue-500"/> Giọng chuyên nghiệp</button>
                                                 <button onClick={(e) => { e.stopPropagation(); handleAiAssist(block, 'casual'); }} className="flex items-center gap-2 px-4 lg:px-3 py-3 lg:py-2 text-[13px] lg:text-xs text-slate-700 hover:bg-slate-50 text-left touch-manipulation min-h-[44px]"><Smile size={14} className="text-orange-500"/> Giọng gần gũi</button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleAiAssist(block, 'fix_contradiction'); }} className="flex items-center gap-2 px-4 lg:px-3 py-3 lg:py-2 text-[13px] lg:text-xs text-slate-700 hover:bg-slate-50 text-left touch-manipulation min-h-[44px]"><Wand2 size={14} className="text-purple-500"/> Sửa lỗi mâu thuẫn</button>
                                               </div>
                                             </>
                                           )}
@@ -897,7 +1015,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
                     <div key={b.id} className="mb-4">
                       {b.content.trim() !== '' && (
                         <>
-                          <span className="text-indigo-600 font-bold uppercase tracking-widest text-[10px]">[{b.title.split(' ')[0]}]</span>
+                          <span className="text-indigo-600 font-bold uppercase tracking-widest text-[10px]">[{b.title}]</span>
                           <br/>
                           <span className="text-slate-800 break-words">{injectVariables(b.content)}</span>
                         </>
@@ -924,7 +1042,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
                       )}
                       {systemBlocks.length > 0 ? systemBlocks.map(b => (
                         <div key={b.id} className="mb-3">
-                          <span className="text-emerald-600 font-bold text-[9px] uppercase">[{b.title.split(' ')[0]}]</span><br/>
+                          <span className="text-emerald-600 font-bold text-[9px] uppercase">[{b.title}]</span><br/>
                           <span className="text-slate-800">{injectVariables(b.content)}</span>
                         </div>
                       )) : !activePersona && <span className="text-slate-400 italic">Chưa có các khối Role, Context, Constraints...</span>}
@@ -942,7 +1060,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
                     <div className="whitespace-pre-wrap text-[11px]">
                       {userBlocks.length > 0 ? userBlocks.map(b => (
                         <div key={b.id} className="mb-3">
-                          <span className="text-blue-600 font-bold text-[9px] uppercase">[{b.title.split(' ')[0]}]</span><br/>
+                          <span className="text-blue-600 font-bold text-[9px] uppercase">[{b.title}]</span><br/>
                           <span className="text-slate-800">{injectVariables(b.content)}</span>
                         </div>
                       )) : <span className="text-slate-400 italic">Chưa có các khối Task, Format, Example...</span>}
@@ -1159,6 +1277,217 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
                 Lưu hồ sơ
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Quick Prompt Modal */}
+      {isQuickPromptModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+          <div 
+            className="bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-lg border border-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600">
+                  <Wand2 size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Tự động hoàn thiện</h3>
+                  <p className="text-xs text-slate-500 font-medium">Bơm nội dung thông minh vào các khối hiện có</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsQuickPromptModalOpen(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                disabled={isGeneratingQuickPrompt}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {blocks.length === 0 ? (
+                <div className="text-center py-8">
+                   <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                      <Layers size={32} />
+                   </div>
+                   <h3 className="text-slate-800 font-bold mb-2">Chưa có khối nào</h3>
+                   <p className="text-slate-500 text-sm mb-6">Vui lòng kéo thả các khối vào khu vực xây dựng trước khi sử dụng tính năng này.</p>
+                   <button 
+                      onClick={() => setIsQuickPromptModalOpen(false)}
+                      className="px-6 py-2 text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
+                    >
+                      Đã hiểu
+                    </button>
+                </div>
+            ) : (
+                <>
+                  <div className="space-y-5">
+                    <div>
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 block">Chủ đề / Yêu cầu</label>
+                      <textarea 
+                        value={quickPromptTopic}
+                        onChange={e => setQuickPromptTopic(e.target.value)}
+                        placeholder="Vd: Viết email xin việc chuyên nghiệp, Lên kịch bản video TikTok viral..."
+                        className="w-full text-sm py-3 px-4 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500 transition-colors bg-slate-50 resize-none min-h-[100px]"
+                        autoFocus
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2 block">Gợi ý nhanh</label>
+                      <div className="flex flex-wrap gap-2">
+                         {["Viết email xin việc chuyên nghiệp", "Lên kịch bản video TikTok", "Lập kế hoạch Digital Marketing", "Giải bài toán lập trình"].map((suggestion, idx) => (
+                           <button 
+                             key={idx}
+                             onClick={() => setQuickPromptTopic(suggestion)}
+                             className="text-xs px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-colors border border-slate-200/50"
+                           >
+                             {suggestion}
+                           </button>
+                         ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 mt-8">
+                    <button 
+                      onClick={() => setIsQuickPromptModalOpen(false)}
+                      className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors border border-transparent"
+                      disabled={isGeneratingQuickPrompt}
+                    >
+                      Hủy
+                    </button>
+                    <button 
+                      onClick={handleGenerateQuickPrompt}
+                      disabled={!quickPromptTopic.trim() || isGeneratingQuickPrompt}
+                      className="px-5 py-2.5 text-sm font-semibold bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white rounded-lg transition-all shadow-md shadow-purple-500/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isGeneratingQuickPrompt ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Đang bơm nội dung...
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 size={16} /> Bắt đầu hoàn thiện
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </>
+            )}
+          </div>
+        </div>
+      )}
+      {/* Image Prompt Modal */}
+      {isImagePromptModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
+          <div 
+            className="bg-white rounded-xl shadow-2xl p-6 md:p-8 w-full max-w-lg border border-slate-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600">
+                  <ImageIcon size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Quét Ảnh & Sinh Prompt</h3>
+                  <p className="text-xs text-slate-500 font-medium">Bóc tách cấu trúc từ hình ảnh tự động</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => {
+                  setIsImagePromptModalOpen(false);
+                  setSelectedImage(null);
+                  setSelectedImageMime(null);
+                }}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+                disabled={isGeneratingFromImage}
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {blocks.length === 0 ? (
+                <div className="text-center py-8">
+                   <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                      <Layers size={32} />
+                   </div>
+                   <h3 className="text-slate-800 font-bold mb-2">Chưa có khối nào</h3>
+                   <p className="text-slate-500 text-sm mb-6">Vui lòng kéo thả các khối vào khu vực xây dựng trước khi sử dụng tính năng này.</p>
+                   <button 
+                      onClick={() => setIsImagePromptModalOpen(false)}
+                      className="px-6 py-2 text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg transition-colors"
+                    >
+                      Đã hiểu
+                    </button>
+                </div>
+            ) : (
+                <>
+                  <div className="space-y-5">
+                    
+                    <div className="w-full">
+                      <label className="text-xs font-bold uppercase tracking-wider text-slate-700 mb-2 block">Tải ảnh lên (Flowchart, UI/UX, Bảng dữ liệu)</label>
+                      <label htmlFor="image-prompt-upload" className="flex flex-col items-center justify-center w-full h-48 border-2 border-slate-300 border-dashed rounded-xl cursor-pointer bg-slate-50 hover:bg-slate-100/50 hover:border-indigo-400 overflow-hidden relative transition-all">
+                        {selectedImage ? (
+                          <div className="absolute inset-0 w-full h-full p-2">
+                             <img src={`data:${selectedImageMime};base64,${selectedImage}`} alt="Selected" className="w-full h-full object-contain rounded-lg" />
+                             <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center rounded-lg m-2">
+                               <p className="text-white text-sm font-bold bg-black/50 px-3 py-1.5 rounded-lg flex items-center gap-2"><Upload size={16}/> Đổi ảnh khác</p>
+                             </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-10 h-10 mb-3 text-slate-400" />
+                            <p className="mb-2 text-sm text-slate-500 font-semibold"><span className="text-indigo-600">Nhấn để tải lên</span> hoặc kéo thả</p>
+                            <p className="text-xs text-slate-400">PNG, JPG, WebP (Tối đa 5MB)</p>
+                          </div>
+                        )}
+                        <input id="image-prompt-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleImageSelect} disabled={isGeneratingFromImage} />
+                      </label>
+                    </div>
+
+                    <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-blue-800">
+                      <strong>Mẹo:</strong> Máy quét cấu trúc AI sẽ nhận diện nội dung ảnh (sơ đồ, giao diện, ý tưởng) và tự động rải dữ liệu vào các khối hiện có (Role, Task, Constraints, v.v).
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 mt-8">
+                    <button 
+                      onClick={() => {
+                        setIsImagePromptModalOpen(false);
+                        setSelectedImage(null);
+                        setSelectedImageMime(null);
+                      }}
+                      className="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors border border-transparent"
+                      disabled={isGeneratingFromImage}
+                    >
+                      Hủy
+                    </button>
+                    <button 
+                      onClick={handleGenerateFromImage}
+                      disabled={!selectedImage || isGeneratingFromImage}
+                      className="px-5 py-2.5 text-sm font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all shadow-md flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isGeneratingFromImage ? (
+                        <>
+                          <Loader2 className="animate-spin w-4 h-4" />
+                          Đang phân tích ảnh...
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon size={16} /> Bắt đầu bóc tách
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </>
+            )}
           </div>
         </div>
       )}

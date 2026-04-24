@@ -11,6 +11,7 @@ import BuilderTab from './components/BuilderTab';
 import EnhancerTab from './components/EnhancerTab';
 import HomeTab from './components/HomeTab';
 import AIFutureTab from './components/AIFutureTab';
+import LearnTab from './components/LearnTab';
 import { auth, db, loginWithGoogle, logoutUser, handleFirestoreError } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, getDocFromServer } from 'firebase/firestore';
@@ -84,7 +85,7 @@ export default function App() {
            querySnapshot.forEach((docSnap) => {
              if (!seenIds.has(docSnap.id)) {
                seenIds.add(docSnap.id);
-               const data = docSnap.data();
+               const data = docSnap.data() as any;
                templatesData.push({
                  id: docSnap.id,
                  title: data.title,
@@ -166,12 +167,13 @@ export default function App() {
     }
   };
 
-  if (activeTab === 'home') {
-    return <HomeTab onStart={() => setActiveTab('builder')} />;
-  }
-
   return (
-    <div className="flex flex-col flex-1 h-full w-full bg-slate-50 text-slate-900 font-sans overflow-hidden md:flex-row">
+    <>
+      <div className={activeTab === 'home' ? 'w-full h-full flex flex-col flex-1' : 'hidden'}>
+        <HomeTab onStart={() => setActiveTab('builder')} />
+      </div>
+
+      <div className={`${activeTab === 'home' ? 'hidden' : 'flex'} flex-col flex-1 h-full w-full bg-slate-50 text-slate-900 font-sans overflow-hidden md:flex-row`}>
       {/* Header/Sidebar Navigation */}
       <nav className="w-full border-b border-slate-200 bg-white flex p-3 shrink-0 z-[60] transition-all duration-300 md:w-64 md:border-b-0 md:border-r md:flex-col md:p-4 justify-between items-center md:items-stretch md:justify-start">
         <div className="flex items-center space-x-3 cursor-pointer md:mb-6 md:px-2" onClick={() => setActiveTab('home')}>
@@ -219,6 +221,12 @@ export default function App() {
             onClick={() => setActiveTab('enhancer')} 
           />
           <NavItem 
+            icon={<Layers size={18} />} 
+            label="Học Tập" 
+            isActive={activeTab === 'learn'} 
+            onClick={() => setActiveTab('learn')} 
+          />
+          <NavItem 
             icon={<Sparkles size={18} />} 
             label="AI and Future" 
             isActive={activeTab === 'aifuture'} 
@@ -245,6 +253,12 @@ export default function App() {
                 className={`p-2 rounded-lg touch-manipulation ${activeTab === 'enhancer' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
              >
                 <Sparkles size={20} />
+             </button>
+             <button 
+                onClick={() => setActiveTab('learn')}
+                className={`p-2 rounded-lg touch-manipulation ${activeTab === 'learn' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
+             >
+                <Layers size={20} />
              </button>
              <button 
                 onClick={() => setActiveTab('aifuture')}
@@ -283,12 +297,24 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col relative bg-slate-50 w-full h-full overflow-hidden">
-        {activeTab === 'builder' && <BuilderTab initialTemplate={loadedTemplate} personas={personas} activePersonaId={activePersonaId} setActivePersonaId={setActivePersonaId} onSaveTemplate={handleSaveTemplate} />}
-        {activeTab === 'library' && <LibraryTab onSelectTemplate={handleSelectTemplate} customTemplates={customTemplates} />}
-        {activeTab === 'enhancer' && <EnhancerTab onApplyTemplate={handleSelectTemplate} />}
-        {activeTab === 'aifuture' && <AIFutureTab />}
+        <div className={activeTab === 'builder' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
+          <BuilderTab initialTemplate={loadedTemplate} personas={personas} activePersonaId={activePersonaId} setActivePersonaId={setActivePersonaId} onSaveTemplate={handleSaveTemplate} />
+        </div>
+        <div className={activeTab === 'library' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
+          <LibraryTab onSelectTemplate={handleSelectTemplate} customTemplates={customTemplates} />
+        </div>
+        <div className={activeTab === 'enhancer' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
+          <EnhancerTab onApplyTemplate={handleSelectTemplate} />
+        </div>
+        <div className={activeTab === 'learn' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
+          <LearnTab />
+        </div>
+        <div className={activeTab === 'aifuture' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
+          <AIFutureTab />
+        </div>
       </main>
     </div>
+    </>
   );
 }
 

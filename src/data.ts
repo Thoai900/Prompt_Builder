@@ -4,10 +4,14 @@ export const AVAILABLE_BLOCKS = [
   { type: 'role' as BlockType, title: 'Vai trò (Role)', description: 'Xác định chuyên môn hoặc nhân vật mà AI sẽ đóng vai. Giúp AI hiểu rõ ngữ cảnh chuyên môn.' },
   { type: 'task' as BlockType, title: 'Nhiệm vụ (Task)', description: 'Hành động cụ thể hoặc mục tiêu bạn muốn AI thực hiện. Càng rõ ràng càng tốt.' },
   { type: 'context' as BlockType, title: 'Ngữ cảnh (Context)', description: 'Thông tin nền tảng, bối cảnh dự án, hoặc đối tượng mục tiêu để AI có thông tin nền.' },
+  { type: 'input_data' as BlockType, title: 'Dữ liệu đầu vào (Input)', description: 'Phân loại và cung cấp dữ liệu đầu vào rõ ràng, chi tiết cấu trúc.' },
+  { type: 'thinking' as BlockType, title: 'Suy luận (Thinking)', description: 'Yêu cầu AI phân tích và suy luận từng bước (Step-by-step) trước khi đưa ra câu trả lời cuối cùng.' },
   { type: 'format' as BlockType, title: 'Định dạng (Format)', description: 'Cấu trúc đầu ra (JSON, bảng markdown, danh sách, đoạn văn, XML).' },
   { type: 'tone' as BlockType, title: 'Giọng điệu (Tone)', description: 'Phong cách viết (chuyên gia, thân thiện, thuyết phục, châm biếm, v.v.).' },
   { type: 'constraints' as BlockType, title: 'Ràng buộc (Constraints)', description: 'Các giới hạn cần tuân thủ (ví dụ: "Dưới 500 từ", "Không sử dụng thuật ngữ phức tạp").' },
   { type: 'example' as BlockType, title: 'Ví dụ (Example)', description: 'Cung cấp ví dụ cụ thể về đầu vào hoặc đầu ra mong muốn (Few-shot prompting).' },
+  { type: 'self_correction' as BlockType, title: 'Tự xem xét (Self-Correction)', description: 'Tạo vòng lặp để AI phân tích, đánh giá và tự sửa lỗi cho câu trả lời của mình.' },
+  { type: 'anchor' as BlockType, title: 'Mỏ neo (Anchor)', description: 'Thiết lập câu mở đầu bắt buộc cho AI, loại bỏ câu chào hỏi thừa.' },
 ];
 
 export const TEMPLATES: PromptTemplate[] = [
@@ -18,8 +22,8 @@ export const TEMPLATES: PromptTemplate[] = [
     description: 'Hướng dẫn tư duy từng bước, không giải hộ, giúp học sinh thực thụ rèn luyện kỹ năng giải quyết vấn đề.',
     category: 'Học sinh/Sinh viên',
     blocks: [
-      { id: '1', type: 'role', title: 'Vai trò (Role)', content: 'Bạn là một gia sư [Môn học] xuất sắc và tâm lý. Nhiệm vụ của bạn là hướng dẫn tôi (đang học lớp [Khối lớp]).' },
-      { id: '2', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Dưới đây là bài tập tôi cần giải: [Đề bài].\nTuyệt đối KHÔNG đưa ra đáp án cuối cùng ngay lập tức.' },
+      { id: '1', type: 'role', title: 'Vai trò (Role)', content: 'Bạn là một gia sư {{Môn học}} xuất sắc và tâm lý. Nhiệm vụ của bạn là hướng dẫn tôi (đang học lớp {{Khối lớp}}).' },
+      { id: '2', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Dưới đây là bài tập tôi cần giải: {{Đề bài}}.\nTuyệt đối KHÔNG đưa ra đáp án cuối cùng ngay lập tức.' },
       { id: '3', type: 'format', title: 'Định dạng (Format)', content: 'Thay vì giải bài, hãy phân tích đề bài, chỉ ra công thức hoặc định lý cần dùng, và đặt ra cho tôi 1-2 câu hỏi gợi mở để tôi tự suy nghĩ bước đầu tiên.\nSau khi tôi trả lời, hãy tiếp tục hướng dẫn tôi bước tiếp theo cho đến khi tôi tự giải được bài toán.' },
       { id: '4', type: 'tone', title: 'Giọng điệu (Tone)', content: 'Ân cần, cởi mở, khuyến khích sự tự lập và tư duy suy luận logic của học sinh.' }
     ]
@@ -30,8 +34,8 @@ export const TEMPLATES: PromptTemplate[] = [
     description: 'Luyện tập Speaking qua roleplay (đóng vai), nhận xét chi tiết về từ vựng, ngữ pháp.',
     category: 'Học sinh/Sinh viên',
     blocks: [
-      { id: '11', type: 'role', title: 'Vai trò (Role)', content: 'Hãy đóng vai một giám khảo IELTS chuyên nghiệp, nghiêm ngặt nhưng mang tính xây dựng. Tôi là thí sinh đang chuẩn bị thi với mục tiêu band mong muốn là: [Band điểm của bạn].' },
-      { id: '12', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Hãy tiến hành thi Speaking Part [1/2/3] với chủ đề: [Chủ đề bạn muốn, ví dụ: Environment, Education...].' },
+      { id: '11', type: 'role', title: 'Vai trò (Role)', content: 'Hãy đóng vai một giám khảo IELTS chuyên nghiệp, nghiêm ngặt nhưng mang tính xây dựng. Tôi là thí sinh đang chuẩn bị thi với mục tiêu band mong muốn là: {{Band điểm của bạn}}.' },
+      { id: '12', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Hãy tiến hành thi Speaking Part [1/2/3] với chủ đề: {{Chủ đề}}.' },
       { id: '13', type: 'constraints', title: 'Ràng buộc (Constraints)', content: 'Hãy hỏi tôi từng câu một, sau đó đợi tôi trả lời. TUYỆT ĐỐI không đưa ra tất cả câu hỏi cùng lúc.\nChỉ đưa câu hỏi tiếp theo sau khi tôi đã trả lời câu hiện tại và bạn đã đưa ra nhận xét.' },
       { id: '14', type: 'example', title: 'Ví dụ (Example)', content: 'Sau mỗi câu trả lời của tôi, hãy nhận xét ngắn gọn: Ưu điểm (Từ vựng, Độ trôi chảy), Điểm cần khắc phục (Ngữ pháp, Phát âm), và Gợi ý cách diễn đạt "ăn điểm" hơn, sau đó mới hỏi câu kế tiếp.' }
     ]
@@ -43,7 +47,7 @@ export const TEMPLATES: PromptTemplate[] = [
     category: 'Học sinh/Sinh viên',
     blocks: [
       { id: '21', type: 'role', title: 'Vai trò (Role)', content: 'Bạn là chuyên gia về phương pháp học tập siêu tốc (Accelerated Learning) và chuyên gia tạo Sơ đồ tư duy.' },
-      { id: '22', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Tôi có một đoạn văn bản dài của môn [Môn học] dưới đây: [Dán nội dung bài học/sách giáo khoa]. Tôi rất khó ghi nhớ nó. Hãy giúp tôi cấu trúc lại đoạn văn này.' },
+      { id: '22', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Tôi có một đoạn văn bản dài của môn {{Môn học}} dưới đây: {{Dán nội dung bài học hoặc sách giáo khoa}}. Tôi rất khó ghi nhớ nó. Hãy giúp tôi cấu trúc lại đoạn văn này.' },
       { id: '23', type: 'format', title: 'Định dạng (Format)', content: 'Phần 1: Cấu trúc dưới dạng Bullet points thật ngắn gọn, in đậm các Keyword quan trọng nhất.\nPhần 2: Gợi ý cách vẽ Sơ đồ tư duy (Mindmap) theo cấu trúc: Ý chính ở giữa -> Các nhánh cấp 1 -> Các nhánh cấp 2.\nPhần 3: Tạo ra 1 câu nói vần điệu vui nhộn (mnemonic) để tôi dễ nhớ trọn bộ luận điểm.' }
     ]
   },
@@ -54,7 +58,7 @@ export const TEMPLATES: PromptTemplate[] = [
     category: 'Học sinh/Sinh viên',
     blocks: [
       { id: '31', type: 'role', title: 'Vai trò (Role)', content: 'Bạn là chuyên gia tư vấn giáo dục và thiết kế phương pháp học tập (Study Planner) hàng đầu.' },
-      { id: '32', type: 'context', title: 'Ngữ cảnh (Context)', content: 'Tôi đang chuẩn bị cho kỳ thi [Tên kỳ thi] sẽ diễn ra sau [Số ngày/tuần]. Điểm mạnh của tôi là môn [Môn học giỏi], tôi đang yếu nhất môn [Môn học kém]. Mỗi ngày tôi có [Số giờ rảnh] giờ để tự học.' },
+      { id: '32', type: 'context', title: 'Ngữ cảnh (Context)', content: 'Tôi đang chuẩn bị cho kỳ thi {{Tên kỳ thi}} sẽ diễn ra sau {{Số ngày hoặc tuần}}. Điểm mạnh của tôi là môn {{Môn học giỏi}}, tôi đang yếu nhất môn {{Môn học kém}}. Mỗi ngày tôi có {{Số giờ rảnh}} giờ để tự học.' },
       { id: '33', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Hãy lập cho tôi một thời gian biểu ôn tập khoa học, giúp tôi không bị quá tải nhưng vẫn cải thiện được môn yếu.' },
       { id: '34', type: 'constraints', title: 'Ràng buộc (Constraints)', content: 'Sử dụng phương pháp Pomodoro. Phân rõ thời lượng học thuyết và thực hành giải đề. Lịch trình phải khả thi, bao gồm thời gian nghỉ ngơi.' }
     ]
@@ -176,5 +180,33 @@ export const BLOCK_SUGGESTIONS: Record<string, Record<string, string>> = {
     coding: 'Ví dụ output:\n```typescript\n// Time: O(N), Space: O(1). Dùng Pointer traversal.\nfunction optimize(items: string[]): number { ... }\n```',
     self_dev: 'Ví dụ bài tập: "Ngay khi đọc xong dòng này, hãy đặt báo thức 5 phút. Ngồi trật tự không cầm điện thoại, cứ khi nào lo lắng ập tới, ghi nhận nó rồi quay lại đếm nhịp thở."',
     roadmap: 'Ví dụ Phase 1: \n- Tháng 1 & 2: Base Foundation.\n- Focus: Học vòng lặp (20% kiến thức lõi)\n- Skip: Thuật toán Graph phức tạp.\n- Project Test: Xây dựng một ứng dụng To-Do siêu đơn giản.'
+  },
+  thinking: {
+    math: 'Trước khi giải, hãy mở thẻ <thinking> để phân tích các biến số và công thức áp dụng. Đóng thẻ </thinking> trước khi viết đáp án.',
+    writing: 'Bắt đầu bằng thẻ <thinking> để phác thảo dàn ý và phân tích đối tượng mục tiêu. Sau đó mới tiến hành viết.',
+    coding: 'Hãy bọc quá trình phân tích thuật toán, độ phức tạp Time/Space và các edge cases bên trong thẻ <thinking> trước khi trả về code.',
+    self_dev: 'Phân tích nguyên nhân sâu xa của vấn đề tâm lý này trong thẻ <thinking>, trước khi đưa ra lời khuyên thực tế.',
+    roadmap: 'Hãy suy luận về tính khả thi của thời gian học và các chướng ngại vật trong thẻ <thinking> trước khi lên lộ trình chi tiết.'
+  },
+  anchor: {
+    math: 'Hãy bắt đầu câu trả lời của bạn đúng bằng chuỗi sau: "Dựa trên phân tích phương trình, ta có các bước giải như sau:"',
+    writing: 'Bắt đầu bài viết ngay lập tức bằng nội dung, tuyệt đối không có câu chào hỏi như "Dưới đây là bài viết...".',
+    coding: 'Bắt đầu câu trả lời bằng: "// Phân tích hệ thống đã hoàn tất. Dưới đây là giải pháp tối ưu:"',
+    self_dev: 'Bắt đầu câu trả lời bằng: "Chào bạn. Đã đến lúc nhìn thẳng vào vấn đề. Cụ thể là:"',
+    roadmap: 'Hãy bắt đầu bảng lộ trình bằng: "Lộ trình học tập chi tiết của bạn được chia làm các giai đoạn như sau:"'
+  },
+  self_correction: {
+    math: 'Sau khi có kết quả, hãy thực hiện một bước <self_evaluate> để kiểm tra ngược lại (thử thay số vào phương trình) trước khi hiển thị kết quả cuối.',
+    writing: 'Sau khi viết nháp, hãy tự đánh giá đoạn nháp dựa trên yếu tố "Lôi cuốn & Dễ hiểu", và tự động cập nhật lại một phiên bản sắc bén hơn nếu nhận thấy sự dài dòng.',
+    coding: 'Hãy tự rà soát mã nguồn vừa tạo để tìm các lỗ hổng (ví dụ: SQL Injection, Null Pointer) và tự động refactor mã trước khi hoàn thành.',
+    self_dev: 'Hãy tự phản biện lại lời khuyên bạn vừa đưa ra: Liệu nó có quá giáo điều không? Nếu có, hãy sửa lại cho thực tế hơn.',
+    roadmap: 'Kiểm tra lại xem thời gian có quá tải không. Nếu quá tải, hãy tự động dãn cách lộ trình ra.'
+  },
+  input_data: {
+    math: '<input_data>\n- Bài toán: {{ĐỀ BÀI}}\n- Cấp học: {{LỚP}}\n</input_data>',
+    writing: '<input_data>\n- Chủ đề chính: {{CHỦ ĐỀ}}\n- Từ khóa SEO: {{TỪ KHÓA}}\n</input_data>',
+    coding: '<input_data>\n- Ngôn ngữ/Framework: {{NGÔN NGỮ}}\n- Đoạn code hiện tại: {{CODE}}\n</input_data>',
+    self_dev: '<input_data>\n- Vấn đề: {{MÔ TẢ}}\n- Tình trạng hiện tại: {{TRẠNG THÁI}}\n</input_data>',
+    roadmap: '<input_data>\n- Mục tiêu: {{MỤC TIÊU}}\n- Thời gian thực tế mỗi ngày: {{THỜI GIAN}}\n</input_data>'
   }
 };

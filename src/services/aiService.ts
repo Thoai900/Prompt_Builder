@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-export type AiActionType = 'auto' | 'longer' | 'shorter' | 'professional' | 'casual';
+export type AiActionType = 'auto' | 'longer' | 'shorter' | 'professional' | 'casual' | 'fix_contradiction';
 
 export async function generateAutoBlockStream(
   blockType: string, 
@@ -43,6 +43,7 @@ export async function generateAutoBlockStream(
       case 'shorter': actionInstruction = "HÀNH ĐỘNG: Rút gọn tối đa, bỏ từ nối thừa."; break;
       case 'professional': actionInstruction = "HÀNH ĐỘNG: Đổi giọng văn trịnh trọng, chuyên nghiệp."; break;
       case 'casual': actionInstruction = "HÀNH ĐỘNG: Đổi giọng văn thân thiện, dễ gần."; break;
+      case 'fix_contradiction': actionInstruction = "HÀNH ĐỘNG: Rà soát nội dung với ngữ cảnh các khối khác, phát hiện và sửa các lỗi mâu thuẫn logic, đảm bảo tính nhất quán chặt chẽ."; break;
       case 'auto':
       default: actionInstruction = "HÀNH ĐỘNG: Hoàn thiện thông tin tối ưu."; break;
     }
@@ -124,6 +125,104 @@ KHÔNG MỞ ĐẦU, KHÔNG GIẢI THÍCH, KHÔNG FORMAT MARKDOWN LOẠI BỎ (\`
     }
   } catch (error) {
     console.error("AI Auto Fill failed:", error);
+    throw error;
+  }
+}
+
+export async function generatePromptFromImage(
+  imageBase64: string,
+  mimeType: string,
+  blocksInfo: { id: string, type: string, title: string }[]
+): Promise<Record<string, string>> {
+  try {
+    const systemInstruction = `Bạn là một "máy quét cấu trúc" cấp cao và Chuyên gia Prompt Engineering.
+Nhiệm vụ của bạn là nhận xét, phân tích hình ảnh đầu vào thông qua 3 lớp:
+1. Lớp Vision: Nhận diện đối tượng, văn bản, bố cục, sơ đồ, các thành phần giao diện (UI/UX) và các thực thể.
+2. Lớp Structuring: Ánh xạ dữ liệu vào các thẻ của Prompt Framework hiện tại.
+3. Lớp Refining: Suy luận chuyên sâu về bối cảnh hình ảnh để xuất ra cấu trúc prompt tối ưu nhất.
+
+Dịch ngược các thiết kế (Reverse Engineering) thành cấu trúc <Role>, <Constraints>.
+Trích xuất Logic (Logic Extraction) từ Sơ đồ/Flowchart thành <Task>, <Process>.
+Ánh xạ ràng buộc (Constraint Mapping): Phân tích màu sắc, không gian để tạo ràng buộc <Constraints>.
+Tham chiếu dữ liệu đầu vào: Thiết lập tự động thẻ <Input> nếu hình ảnh là tài liệu, bảng biểu.
+
+Các khối (blocks) hiện tại đang có trong hệ thống Prompt:
+${blocksInfo.map(b => `- ID: ${b.id} | Phân loại: ${b.type} | Tiêu đề: ${b.title}`).join('\n')}
+
+Dựa vào phân tích hình ảnh, bạn phải tạo ra nội dung phù hợp cho CÁC KHỐI ĐANG CÓ.
+Bạn trả về một JSON Object duy nhất:
+{
+  "block_id_1": "Nội dung cho khối 1",
+  "block_id_2": "Nội dung cho khối 2"
+}
+
+KHÔNG TRẢ VỀ BẤT KỲ GÌ KHÁC NGOÀI JSON OBJECT.
+Chỉ trả về các key tương ứng với ID của khối (block ID), nội dung được format dưới dạng Markdown hoặc văn bản cực kỳ chất lượng.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.1-pro-preview',
+      contents: [
+        {
+          text: `Hãy phân tích hình ảnh này và tạo nội dung cho các khối (blocks) tương ứng chuyên nghiệp nhất.`
+        },
+        {
+          inlineData: {
+            data: imageBase64,
+            mimeType: mimeType
+          }
+        }
+      ],
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+        responseMimeType: "application/json"
+      }
+    });
+
+    const text = response.text || "{}";
+    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanedText);
+  } catch (error) {
+    console.error("AI Image to Prompt failed:", error);
+    throw error;
+  }
+}
+
+export async function generateContentForExistingBlocks(
+  topic: string,
+  blocksInfo: { id: string, type: string, title: string }[]
+): Promise<Record<string, string>> {
+  try {
+    const systemInstruction = `Bạn là chuyên gia Prompt Engineering cấp cao.
+Người dùng yêu cầu tự động điền nội dung cho một prompt framework về chủ đề/nhiệm vụ: "${topic}"
+
+Các khối hiện tại đang có trong Prompt:
+${blocksInfo.map(b => `- ID: ${b.id} | Phân loại: ${b.type} | Tiêu đề: ${b.title}`).join('\n')}
+
+Bạn phải trả lại một JSON Object. Mỗi key là ID của khối (block ID), value là nội dung tương ứng của khối đó.
+Nội dung của mỗi khối phải chi tiết, sát với chủ đề "${topic}", tuân theo quy tắc của chuyên gia Prompt Engineering.
+Với thẻ 'thinking', 'anchor', 'self_correction', 'input_data' hãy viết nội dung đặc thù phù hợp nội dung.
+
+Trọng tâm: Cung cấp nội dung CHẤT LƯỢNG CAO, SẴN SÀNG SỬ DỤNG.
+
+BẮT BUỘC trả về ĐÚNG ĐỊNH DẠNG JSON.
+KHÔNG MỞ ĐẦU, KHÔNG GIẢI THÍCH, KHÔNG FORMAT MARKDOWN.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.1-pro-preview',
+      contents: `Hãy tạo nội dung cho các khối tương ứng để giải quyết nhiệm vụ: "${topic}"`,
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+        responseMimeType: "application/json"
+      }
+    });
+
+    const text = response.text || "{}";
+    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    return JSON.parse(cleanedText);
+  } catch (error) {
+    console.error("AI Quick Fill failed:", error);
     throw error;
   }
 }

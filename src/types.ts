@@ -1,6 +1,6 @@
-export type TabType = 'home' | 'aifuture' | 'library' | 'builder' | 'enhancer';
+export type TabType = 'home' | 'aifuture' | 'library' | 'builder' | 'enhancer' | 'learn';
 
-export type BlockType = 'role' | 'task' | 'context' | 'format' | 'tone' | 'constraints' | 'example';
+export type BlockType = 'role' | 'task' | 'context' | 'format' | 'tone' | 'constraints' | 'example' | 'thinking' | 'anchor' | 'self_correction' | 'input_data';
 
 export interface PromptBlock {
   id: string;
