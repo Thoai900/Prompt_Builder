@@ -457,20 +457,119 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
   };
 
   const FRAMEWORKS = [
-    { id: 'claude_xmd', name: 'Claude Pro XMD', blocks: ['role', 'task', 'input_data', 'thinking', 'format', 'constraints', 'self_correction', 'anchor'] },
-    { id: 'costar', name: 'CO-STAR Framework', blocks: ['context', 'task', 'tone', 'context', 'format'] },
-    { id: 'rtf', name: 'RTF Framework', blocks: ['role', 'task', 'format'] },
-    { id: 'race', name: 'RACE Framework', blocks: ['role', 'task', 'context', 'format'] },
+    { 
+      id: 'role', 
+      name: 'R.O.L.E Framework', 
+      blocks: [
+        { type: 'role', title: 'Vai trò (Role)', content: 'Bạn là {{Chuyên gia/Vai trò cụ thể}}' },
+        { type: 'task', title: 'Mục tiêu (Objective)', content: 'Tôi cần {{Hành động cụ thể}}' },
+        { type: 'context', title: 'Ngữ cảnh (Context)', content: 'Trong tình huống {{Bối cảnh chi tiết}}' },
+        { type: 'format', title: 'Kỳ vọng (Expectation)', content: 'Kết quả cần {{Định dạng/Phong cách/Độ dài}}' }
+      ] 
+    },
+    { 
+      id: 'create', 
+      name: 'C.R.E.A.T.E Framework', 
+      blocks: [
+        { type: 'context', title: 'Context (Ngữ cảnh)', content: '{{Mô tả tình huống/vấn đề}}' },
+        { type: 'role', title: 'Role (Vai trò)', content: 'Hãy đóng vai {{Chuyên gia/nhân vật}}' },
+        { type: 'example', title: 'Examples (Ví dụ)', content: 'Tham khảo phong cách {{Mẫu cụ thể}}' },
+        { type: 'task', title: 'Action (Hành động)', content: 'Hãy {{tạo/viết/phân tích/tối ưu}}' },
+        { type: 'format', title: 'Type (Kiểu dáng)', content: 'Dưới dạng {{Format cụ thể}}' },
+        { type: 'constraints', title: 'Extras (Thêm)', content: 'Lưu ý {{Ràng buộc/yêu cầu đặc biệt}}' }
+      ] 
+    },
+    { 
+      id: 'persona', 
+      name: 'P.E.R.S.O.N.A Framework', 
+      blocks: [
+        { type: 'task', title: 'Purpose (Mục đích)', content: 'Tôi muốn {{Kết quả cuối cùng}}' },
+        { type: 'context', title: 'Experience (Kinh nghiệm)', content: 'Trình độ của tôi là {{Level}}' },
+        { type: 'example', title: 'Reference (Tham chiếu)', content: 'Tôi thích phong cách {{Mẫu/Tác giả}}' },
+        { type: 'constraints', title: 'Specifics (Chi tiết)', content: 'Bao gồm {{Yêu cầu cụ thể}}' },
+        { type: 'format', title: 'Output (Đầu ra)', content: 'Cho tôi {{Định dạng}}' },
+        { type: 'tone', title: 'Nuance (Sắc thái)', content: 'Giọng điệu {{Tone mong muốn}}' },
+        { type: 'context', title: 'Audience (Đối tượng)', content: 'Người đọc/nghe là {{Ai}}' }
+      ] 
+    },
+    { 
+      id: 'task_fw', 
+      name: 'T.A.S.K Framework', 
+      blocks: [
+        { type: 'task', title: 'Task (Nhiệm vụ)', content: '{{Động từ hành động}} {{Đối tượng cụ thể}}' },
+        { type: 'context', title: 'Audience (Đối tượng)', content: 'Dành cho {{Ai}}' },
+        { type: 'tone', title: 'Style (Phong cách)', content: 'Theo kiểu {{Mô tả}}' },
+        { type: 'constraints', title: 'Key points (Điểm chính)', content: 'Phải có {{Yêu cầu bắt buộc}}' }
+      ] 
+    },
+    { 
+      id: 'chain', 
+      name: 'C.H.A.I.N Framework', 
+      blocks: [
+        { type: 'context', title: 'Challenge (Thách thức)', content: 'Vấn đề tôi đang gặp là {{Mô tả}}' },
+        { type: 'task', title: 'Help needed (Cần giúp)', content: 'Tôi cần bạn giúp {{Hành động}}' },
+        { type: 'format', title: 'Approach (Cách tiếp cận)', content: 'Hãy làm theo các bước:\n- Bước 1: {{Phân tích/Nghiên cứu}}\n- Bước 2: {{Đề xuất/Tạo}}\n- Bước 3: {{Tối ưu/Tinh chỉnh}}' },
+        { type: 'input_data', title: 'Input (Đầu vào)', content: 'Thông tin tôi có: {{Dữ liệu}}' },
+        { type: 'task', title: 'Next steps (Bước tiếp theo)', content: 'Sau đó hãy {{Yêu cầu cuối}}' }
+      ] 
+    },
+    { 
+      id: 'claude_xmd', 
+      name: 'Claude Pro XMD', 
+      blocks: [
+        { type: 'role', title: 'Vai trò (Role)' },
+        { type: 'task', title: 'Nhiệm vụ (Task)' },
+        { type: 'input_data', title: 'Dữ liệu đầu vào (Input)' },
+        { type: 'thinking', title: 'Suy luận (Thinking)' },
+        { type: 'format', title: 'Định dạng (Format)' },
+        { type: 'constraints', title: 'Ràng buộc (Constraints)' },
+        { type: 'self_correction', title: 'Tự xem xét (Self-Correction)' },
+        { type: 'anchor', title: 'Mỏ neo (Anchor)' }
+      ] 
+    },
+    { 
+      id: 'costar', 
+      name: 'CO-STAR Framework', 
+      blocks: [
+        { type: 'context', title: 'Context (Ngữ cảnh)' },
+        { type: 'task', title: 'Objective (Mục tiêu)' },
+        { type: 'tone', title: 'Style (Phong cách)' },
+        { type: 'tone', title: 'Tone (Giọng điệu)' },
+        { type: 'context', title: 'Audience (Đối tượng)' },
+        { type: 'format', title: 'Response (Phản hồi)' }
+      ] 
+    },
+    { 
+      id: 'rtf', 
+      name: 'RTF Framework', 
+      blocks: [
+        { type: 'role', title: 'Role (Vai trò)' },
+        { type: 'task', title: 'Task (Nhiệm vụ)' },
+        { type: 'format', title: 'Format (Định dạng)' }
+      ] 
+    },
+    { 
+      id: 'race', 
+      name: 'RACE Framework', 
+      blocks: [
+        { type: 'role', title: 'Role (Vai trò)' },
+        { type: 'task', title: 'Action (Nhiệm vụ)' },
+        { type: 'context', title: 'Context (Ngữ cảnh)' },
+        { type: 'format', title: 'Expectation (Kỳ vọng)' }
+      ] 
+    },
   ];
 
-  const handleApplyFramework = (fwBlocks: string[]) => {
-    const newBlocks = fwBlocks.map((type, idx) => {
+  const handleApplyFramework = (fwBlocks: any[]) => {
+    const newBlocks = fwBlocks.map((blockData, idx) => {
+      const isString = typeof blockData === 'string';
+      const type = isString ? blockData : blockData.type;
       const blockDef = AVAILABLE_BLOCKS.find(b => b.type === type);
       return {
         id: `${type}-${Date.now()}-${idx}`,
         type: type as any,
-        title: blockDef?.title || '',
-        content: ''
+        title: isString ? (blockDef?.title || '') : (blockData.title || blockDef?.title || ''),
+        content: isString ? '' : (blockData.content || '')
       };
     });
     setBlocks(prev => {
@@ -508,8 +607,8 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
       <DragDropContext onDragEnd={onDragEnd}>
         
         {/* Left Column: Available Blocks (Hidden on Mobile) */}
-        <div className="hidden lg:flex w-64 border-r border-slate-200 bg-white flex-col shrink-0 h-full overflow-y-auto custom-scrollbar pt-2 pb-14 lg:pb-0">
-          <div className="p-4 border-b border-slate-100 flex flex-col gap-4">
+        <div className="hidden lg:flex w-64 border-r border-slate-200 bg-white flex-col shrink-0 h-full overflow-hidden pt-2 pb-14 lg:pb-0">
+          <div className="p-4 border-b border-slate-100 flex flex-col gap-4 shrink-0">
             <div>
                <h3 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Cài đặt bộ</h3>
                <div className="relative mb-2">
@@ -565,14 +664,14 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
                  </div>
                </div>
                
-               <div className="mt-4 border-t border-slate-100 pt-3">
-                 <h3 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2">Framework Chuẩn</h3>
-                 <div className="flex flex-col gap-1.5">
+               <div className="mt-4 border-t border-slate-100 pt-3 flex flex-col min-h-0">
+                 <h3 className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-2 shrink-0">Framework Chuẩn</h3>
+                 <div className="flex flex-col gap-1.5 overflow-y-auto custom-scrollbar pr-1 max-h-[180px]">
                    {FRAMEWORKS.map(fw => (
                      <button
                        key={fw.id}
                        onClick={() => handleApplyFramework(fw.blocks)}
-                       className="text-left px-3 py-2 text-xs font-semibold text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-colors min-h-[44px] flex items-center"
+                       className="text-left px-3 py-2 text-[11px] font-semibold text-slate-600 bg-slate-50 border border-slate-200 rounded-lg hover:bg-indigo-50 hover:text-indigo-700 hover:border-indigo-200 transition-colors flex items-center shrink-0"
                      >
                        {fw.name}
                      </button>
@@ -591,7 +690,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
               <div 
                 ref={provided.innerRef} 
                 {...provided.droppableProps}
-                className="flex-1 overflow-y-auto p-4 space-y-2"
+                className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar"
               >
                 {AVAILABLE_BLOCKS.map((block, index) => (
                   // @ts-ignore
@@ -637,7 +736,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
         <div className={`flex-1 bg-slate-50 flex flex-col overflow-hidden w-full h-full min-w-0 ${showMobilePanel === 'build' ? 'flex' : 'hidden lg:flex'}`}>
           <div className="p-4 md:p-6 border-b border-slate-200 shrink-0 flex items-center justify-between flex-wrap gap-4 bg-white">
             <div>
-              <h2 className="text-lg font-bold">Khu vực xây dựng</h2>
+              <h2 className="text-lg font-bold">The Workshop (Xưởng chế tác)</h2>
               <div className="flex items-center gap-3 mt-1 text-sm text-slate-500 hidden lg:flex">
                 <span>Kéo thả để sắp xếp. Gợi ý: Gõ <code className="bg-slate-100 px-1 py-0.5 rounded text-indigo-600 font-mono text-xs">{"{{Tên}}"}</code> để tạo biến.</span>
               </div>

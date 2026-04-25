@@ -8,7 +8,7 @@ interface LibraryTabProps {
   customTemplates?: PromptTemplate[];
 }
 
-const CATEGORIES = ['Tất cả', 'Học sinh/Sinh viên', 'Người đi làm', 'Sáng tạo nội dung', 'Phát triển cá nhân', 'Mẫu của tôi'];
+const CATEGORIES = ['Tất cả', 'Công thức Prompt', 'Học sinh/Sinh viên', 'Người đi làm', 'Sáng tạo nội dung', 'Phát triển cá nhân', 'Mẫu của tôi'];
 
 export default function LibraryTab({ onSelectTemplate, customTemplates = [] }: LibraryTabProps) {
   const [searchTerm, setSearchTerm] = useState('');

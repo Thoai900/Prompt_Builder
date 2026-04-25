@@ -188,6 +188,57 @@ Chỉ trả về các key tương ứng với ID của khối (block ID), nội 
   }
 }
 
+export async function generateQuickResponse(
+  shortInput: string,
+  packBlocks?: { type: string, title: string, content: string }[],
+  onChunk?: (chunk: string) => void
+): Promise<string> {
+  try {
+    let systemInstruction = `Bạn là một AI Assistant cấp cao chuyên xử lý tác vụ nhanh gọn hiệu quả.
+    
+Người dùng vừa gửi một yêu cầu rất ngắn. Tuy nhiên, hệ thống đã ngầm (invisibly) bọc yêu cầu này trong một cấu trúc tinh vi để đảm bảo chất lượng.
+`;
+
+    if (packBlocks && packBlocks.length > 0) {
+      systemInstruction += `\n[CÁC RÀNG BUỘC VÀ NGỮ CẢNH BỊ ẨN TỪ HỆ THỐNG]\n`;
+      packBlocks.forEach(b => {
+        systemInstruction += `- Thẻ <${b.type}>: ${b.content}\n`;
+      });
+      systemInstruction += `\nBẮT BUỘC TUÂN THỦ CÁC HƯỚNG DẪN TRÊN TRONG QUÁ TRÌNH TRẢ LỜI.\n`;
+    } else {
+      // Default invisible structure for arbitrary quick prompt
+      systemInstruction += `
+[CẤU TRÚC NGẦM ĐỊNH TỪ HỆ THỐNG MẶC ĐỊNH]
+- Thẻ <Role>: Ngươi là một chuyên gia thực tế, đi thẳng vào vấn đề.
+- Thẻ <Constraints>: Trình bày trực tiếp, không vòng vo "Xin chào", "Dưới đây là", sử dụng format rõ ràng (bullet points, markdown table) nếu cần thiết. Không sử dụng các từ ngữ sáo rỗng.
+`;
+    }
+
+    const responseStream = await ai.models.generateContentStream({
+      model: 'gemini-3.1-pro-preview',
+      contents: shortInput,
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+      }
+    });
+
+    let fullText = "";
+    for await (const chunk of responseStream) {
+      if (chunk.text) {
+        fullText += chunk.text;
+        if (onChunk) {
+          onChunk(chunk.text);
+        }
+      }
+    }
+    return fullText;
+  } catch (error) {
+    console.error("AI Quick Generation failed:", error);
+    throw error;
+  }
+}
+
 export async function generateContentForExistingBlocks(
   topic: string,
   blocksInfo: { id: string, type: string, title: string }[]

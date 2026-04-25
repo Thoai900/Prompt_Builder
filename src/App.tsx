@@ -5,13 +5,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { TabType, PromptTemplate, Workspace, AiPersona } from './types';
-import { Layers, Library, Sparkles, Home, LogIn, LogOut } from 'lucide-react';
+import { Layers, Library, Sparkles, Home, LogIn, LogOut, Zap, Package } from 'lucide-react';
 import LibraryTab from './components/LibraryTab';
 import BuilderTab from './components/BuilderTab';
 import EnhancerTab from './components/EnhancerTab';
 import HomeTab from './components/HomeTab';
 import AIFutureTab from './components/AIFutureTab';
 import LearnTab from './components/LearnTab';
+import UtilityBeltTab from './components/UtilityBeltTab';
 import { auth, db, loginWithGoogle, logoutUser, handleFirestoreError } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, getDocFromServer } from 'firebase/firestore';
@@ -204,9 +205,15 @@ export default function App() {
           />
           <NavItem 
             icon={<Layers size={18} />} 
-            label="Prompt Builder" 
+            label="The Workshop" 
             isActive={activeTab === 'builder'} 
             onClick={() => setActiveTab('builder')} 
+          />
+          <NavItem 
+            icon={<Zap size={18} className="text-amber-500" />} 
+            label="The Utility Belt" 
+            isActive={activeTab === 'utilitybelt'} 
+            onClick={() => setActiveTab('utilitybelt')} 
           />
           <NavItem 
             icon={<Library size={18} />} 
@@ -241,6 +248,12 @@ export default function App() {
                 className={`p-2 rounded-lg touch-manipulation ${activeTab === 'builder' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
              >
                 <Layers size={20} />
+             </button>
+             <button 
+                onClick={() => setActiveTab('utilitybelt')}
+                className={`p-2 rounded-lg touch-manipulation ${activeTab === 'utilitybelt' ? 'bg-amber-50 text-amber-600' : 'text-slate-500 hover:bg-slate-50'}`}
+             >
+                <Zap size={20} />
              </button>
              <button 
                 onClick={() => setActiveTab('library')}
@@ -311,6 +324,9 @@ export default function App() {
         </div>
         <div className={activeTab === 'aifuture' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
           <AIFutureTab />
+        </div>
+        <div className={activeTab === 'utilitybelt' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
+          <UtilityBeltTab user={user} onSaveTemplate={handleSaveTemplate} />
         </div>
       </main>
     </div>

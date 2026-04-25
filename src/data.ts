@@ -128,6 +128,186 @@ export const TEMPLATES: PromptTemplate[] = [
       { id: '82', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Hãy dịch đoạn nội dung dưới đây từ ngôn ngữ gốc sang: {{Ngôn Ngữ Đích}}.\n\n[Nội dung cần dịch]:\n{{Đoạn Văn Bản Cần Dịch}}' },
       { id: '83', type: 'tone', title: 'Giọng điệu (Tone)', content: 'Tự nhiên, trôi chảy, sử dụng thành ngữ bản địa. Khử hoàn toàn mùi "văn dịch máy".' }
     ]
+  },
+  // CÔNG THỨC PROMPT
+  {
+    id: 'formula-role',
+    title: '📘 Công Thức R.O.L.E',
+    description: 'Xác định nhanh bối cảnh, vai trò, nhiệm vụ và kỳ vọng của câu trả lời.',
+    category: 'Công thức Prompt',
+    blocks: [
+      { id: 'role-1', type: 'role', title: 'Vai trò (Role)', content: 'Bạn là {{Chuyên gia/Vai trò cụ thể}}' },
+      { id: 'role-2', type: 'task', title: 'Mục tiêu (Objective)', content: 'Tôi cần {{Hành động cụ thể}}' },
+      { id: 'role-3', type: 'context', title: 'Ngữ cảnh (Context)', content: 'Trong tình huống {{Bối cảnh chi tiết}}' },
+      { id: 'role-4', type: 'format', title: 'Kỳ vọng (Expectation)', content: 'Kết quả cần {{Định dạng/Phong cách/Độ dài}}' }
+    ]
+  },
+  {
+    id: 'formula-create',
+    title: '🛠️ Công Thức C.R.E.A.T.E',
+    description: 'Dành cho các tác vụ sáng tạo, cần có ví dụ mẫu cụ thể.',
+    category: 'Công thức Prompt',
+    blocks: [
+      { id: 'create-1', type: 'context', title: 'Context (Ngữ cảnh)', content: '{{Mô tả tình huống/vấn đề}}' },
+      { id: 'create-2', type: 'role', title: 'Role (Vai trò)', content: 'Hãy đóng vai {{Chuyên gia/nhân vật}}' },
+      { id: 'create-3', type: 'example', title: 'Examples (Ví dụ)', content: 'Tham khảo phong cách: {{Mẫu cụ thể}}' },
+      { id: 'create-4', type: 'task', title: 'Action (Hành động)', content: 'Hãy {{tạo/viết/phân tích/tối ưu}}' },
+      { id: 'create-5', type: 'format', title: 'Type (Kiểu dáng)', content: 'Dưới dạng: {{Format cụ thể}}' },
+      { id: 'create-6', type: 'constraints', title: 'Extras (Thêm)', content: 'Lưu ý: {{Ràng buộc/yêu cầu đặc biệt}}' }
+    ]
+  },
+  {
+    id: 'formula-persona',
+    title: '🎭 Công Thức P.E.R.S.O.N.A',
+    description: 'Sử dụng để tạo nội dung với phong cách, khán giả và kinh nghiệm cá nhân hóa cao.',
+    category: 'Công thức Prompt',
+    blocks: [
+      { id: 'persona-1', type: 'task', title: 'Purpose (Mục đích)', content: 'Tôi muốn {{Kết quả cuối cùng}}' },
+      { id: 'persona-2', type: 'context', title: 'Experience (Kinh nghiệm)', content: 'Trình độ của tôi là: {{Level}}' },
+      { id: 'persona-3', type: 'example', title: 'Reference (Tham chiếu)', content: 'Tôi thích phong cách: {{Mẫu/Tác giả}}' },
+      { id: 'persona-4', type: 'constraints', title: 'Specifics (Chi tiết)', content: 'Bao gồm: {{Yêu cầu cụ thể}}' },
+      { id: 'persona-5', type: 'format', title: 'Output (Đầu ra)', content: 'Cho tôi {{Định dạng}}' },
+      { id: 'persona-6', type: 'tone', title: 'Nuance (Sắc thái)', content: 'Giọng điệu: {{Tone mong muốn}}' },
+      { id: 'persona-7', type: 'context', title: 'Audience (Đối tượng)', content: 'Người đọc/nghe là: {{Khán giả mục tiêu}}' }
+    ]
+  },
+  {
+    id: 'formula-task',
+    title: '✅ Công Thức T.A.S.K',
+    description: 'Khung đơn giản nhất, đi thẳng vào vấn đề. Phù hợp cho email, yêu cầu ngắn gọn.',
+    category: 'Công thức Prompt',
+    blocks: [
+      { id: 'task-1', type: 'task', title: 'Task (Nhiệm vụ)', content: '{{Động từ hành động}} {{Đối tượng cụ thể}}' },
+      { id: 'task-2', type: 'context', title: 'Audience (Đối tượng)', content: 'Dành cho: {{Ai}}' },
+      { id: 'task-3', type: 'tone', title: 'Style (Phong cách)', content: 'Theo kiểu: {{Mô tả}}' },
+      { id: 'task-4', type: 'constraints', title: 'Key points (Điểm chính)', content: 'Phải có: {{Yêu cầu bắt buộc}}' }
+    ]
+  },
+  {
+    id: 'formula-chain',
+    title: '🔗 Công Thức C.H.A.I.N',
+    description: 'Chia nhỏ vấn đề để AI suy luận và giải quyết theo từng bước cụ thể.',
+    category: 'Công thức Prompt',
+    blocks: [
+      { id: 'chain-1', type: 'context', title: 'Challenge (Thách thức)', content: 'Vấn đề tôi đang gặp là: {{Mô tả}}' },
+      { id: 'chain-2', type: 'task', title: 'Help needed (Cần giúp)', content: 'Tôi cần bạn giúp: {{Hành động}}' },
+      { id: 'chain-3', type: 'format', title: 'Approach (Cách tiếp cận)', content: 'Hãy làm theo các bước:\n- Bước 1: {{Phân tích/Nghiên cứu}}\n- Bước 2: {{Đề xuất/Tạo}}\n- Bước 3: {{Tối ưu/Tinh chỉnh}}' },
+      { id: 'chain-4', type: 'input_data', title: 'Input (Đầu vào)', content: 'Thông tin tôi có: {{Dữ liệu}}' },
+      { id: 'chain-5', type: 'task', title: 'Next steps (Bước tiếp theo)', content: 'Sau đó hãy: {{Yêu cầu cuối}}' }
+    ]
+  }
+];
+
+export const DAILY_PACKS: PromptTemplate[] = [
+  {
+    id: 'pack-cooking',
+    title: 'Trợ lý Nấu ăn 🍳',
+    description: 'Nấu ngay bữa ăn ngon dựa trên nguyên liệu đang có.',
+    category: 'DailyPack',
+    blocks: [
+      { id: '1', type: 'role', title: 'Vai trò', content: 'Bạn là siêu đầu bếp Gordon Ramsay nhưng rất kiên nhẫn.' },
+      { id: '2', type: 'task', title: 'Nhiệm vụ', content: 'Tôi có các nguyên liệu sau: {{Nguyên liệu}}. Hãy gợi ý 1 món ăn nhanh gọn và hướng dẫn từng bước.' },
+      { id: '3', type: 'constraints', title: 'Ràng buộc', content: 'Ưu tiên phương pháp dễ, đồ dùng bếp phổ thông. Viết siêu ngắn gọn ráp vào thực tế.' }
+    ]
+  },
+  {
+    id: 'pack-english',
+    title: 'Gia sư Tiếng Anh 🇬🇧',
+    description: 'Chữa ngữ pháp, gợi ý diễn đạt tự nhiên hơn.',
+    category: 'DailyPack',
+    blocks: [
+      { id: '1', type: 'role', title: 'Vai trò', content: 'Bạn là giáo viên bản xứ Anh Quốc, vui tính và giỏi chuyên môn.' },
+      { id: '2', type: 'task', title: 'Nhiệm vụ', content: 'Hãy sửa lỗi đoạn văn sau và gợi ý cách nói tự nhiên hơn: {{Đoạn văn}}' },
+      { id: '3', type: 'format', title: 'Định dạng', content: '1. Câu sửa lại\n2. Phân tích lỗi (ngắn gọn)\n3. 3 cụm từ thay thế C1/C2.' }
+    ]
+  },
+  {
+    id: 'pack-news',
+    title: 'Tóm tắt Tin tức 📰',
+    description: 'Nắm bắt ý chính bài báo dài chỉ trong 10 giây.',
+    category: 'DailyPack',
+    blocks: [
+      { id: '1', type: 'role', title: 'Vai trò', content: 'Chuyên gia phân tích tin tức tốc độ.' },
+      { id: '2', type: 'task', title: 'Nhiệm vụ', content: 'Tóm tắt bài viết sau sao cho đứa bé 12 tuổi cũng hiểu được: {{Nội dung/Link bài}}' },
+      { id: '3', type: 'constraints', title: 'Ràng buộc', content: 'Giới hạn trong 3 bullet points chính xác nhất. Không bình luận thêm.' }
+    ]
+  },
+  {
+    id: 'pack-gym',
+    title: 'Lên lịch Tập Gym 🏋️',
+    description: 'Tạo kế hoạch tập luyện theo ngày và mục tiêu.',
+    category: 'DailyPack',
+    blocks: [
+      { id: '1', type: 'role', title: 'Vai trò', content: 'Master Trainer thể hình đẳng cấp quốc tế.' },
+      { id: '2', type: 'task', title: 'Nhiệm vụ', content: 'Lên lịch tập luyện cho tôi với yêu cầu: {{Số ngày/Mục tiêu}}' },
+      { id: '3', type: 'format', title: 'Định dạng', content: 'Bảng theo dõi (Thứ - Nhóm cơ - Bài tập - Số Rep/Set).' }
+    ]
+  },
+  {
+    id: 'pack-gift',
+    title: 'Gợi ý Quà tặng 🎁',
+    description: 'Tìm quà tặng độc đáo theo ngân sách và sở thích.',
+    category: 'DailyPack',
+    blocks: [
+      { id: '1', type: 'role', title: 'Vai trò', content: 'Chuyên gia tư vấn Quà tặng cá nhân hóa siêu tinh tế.' },
+      { id: '2', type: 'task', title: 'Nhiệm vụ', content: 'Gợi ý 5 món quà sinh nhật cho: {{Người nhận, sở thích, ngân sách}}' },
+      { id: '3', type: 'constraints', title: 'Ràng buộc', content: 'Loại bỏ những món quà sáo rỗng. Gợi ý cụ thể, có link thực tế nếu có thể.' }
+    ]
+  },
+  {
+    id: 'pack-code-review',
+    title: 'Chuyên gia Review Code 💻',
+    description: 'Tìm lỗi tối ưu, clean code tức thì.',
+    category: 'DailyPack',
+    blocks: [
+      { id: '1', type: 'role', title: 'Vai trò', content: 'Senior Staff Engineer khó tính nhưng công tâm.' },
+      { id: '2', type: 'task', title: 'Nhiệm vụ', content: 'Review đoạn code này giúp tôi: {{Đoạn code}}' },
+      { id: '3', type: 'format', title: 'Định dạng', content: 'Trình bày theo thứ tự: Lỗi nghiêm trọng -> Tối ưu hiệu năng -> Đề xuất Clean Code -> Code đã refactor an toàn.' }
+    ]
+  },
+  {
+    id: 'pack-mindfulness',
+    title: 'Hướng dẫn Thiền & Giấc ngủ 🧘',
+    description: 'Câu lệnh giúp giảm căng thẳng 5 phút.',
+    category: 'DailyPack',
+    blocks: [
+      { id: '1', type: 'role', title: 'Vai trò', content: 'Bậc thầy thiền định (Monk) và tâm lý học hành vi.' },
+      { id: '2', type: 'task', title: 'Nhiệm vụ', content: 'Tôi đang cảm thấy: {{Tình trạng tâm lý hiện tại}}. Hãy hướng dẫn tôi thoát khỏi nó.' },
+      { id: '3', type: 'constraints', title: 'Ràng buộc', content: 'Chỉ dẫn thực hành các bài tập nhịp thở cực kỳ cụ thể (bằng giây). Giọng văn vô cùng chữa lành.' }
+    ]
+  },
+  {
+    id: 'pack-travel',
+    title: 'Kế hoạch Du lịch ✈️',
+    description: 'Lên lịch trình theo ngân sách, thời gian.',
+    category: 'DailyPack',
+    blocks: [
+      { id: '1', type: 'role', title: 'Vai trò', content: 'Google Local Guide Level 10 & Chuyên gia Phượt siêu tối ưu.' },
+      { id: '2', type: 'task', title: 'Nhiệm vụ', content: 'Lên kế hoạch du lịch tại {{Địa điểm}} trong {{Số ngày}} ngày với quỹ {{Ngân sách}}.' },
+      { id: '3', type: 'format', title: 'Định dạng', content: 'Lộ trình chia theo khung giờ. Bảng ước tính chi phí. 3 lưu ý tránh bị lừa ở địa phương đó.' }
+    ]
+  },
+  {
+    id: 'pack-explain',
+    title: 'Giải thích Khái niệm 🧩',
+    description: 'Giải thích định lý, thuật ngữ phức tạp cho trẻ em 10 tuổi.',
+    category: 'DailyPack',
+    blocks: [
+      { id: '1', type: 'role', title: 'Vai trò', content: 'Người thầy có khả năng biến mọi thứ phức tạp thành đơn giản, vui nhộn.' },
+      { id: '2', type: 'task', title: 'Nhiệm vụ', content: 'Hãy giải thích khái niệm: {{Thuật ngữ/Khái niệm}} sao cho một đứa bé 10 tuổi cũng hiểu được.' },
+      { id: '3', type: 'constraints', title: 'Ràng buộc', content: 'Sử dụng các ví dụ ẩn dụ trong đời sống (ăn bánh, quả táo, xe đạp...)' }
+    ]
+  },
+  {
+    id: 'pack-interview',
+    title: 'Coach Phỏng vấn Vượt rào 👔',
+    description: 'Mô phỏng phỏng vấn, đưa ra feedback cho câu trả lời.',
+    category: 'DailyPack',
+    blocks: [
+      { id: '1', type: 'role', title: 'Vai trò', content: 'Giám đốc Nhân sự (HR Director & Hiring Manager).' },
+      { id: '2', type: 'task', title: 'Nhiệm vụ', content: 'Tôi sắp phỏng vấn vị trí: {{Tên vị trí công việc}}. Hãy đặt cho tôi 1 câu hỏi chuyên sâu, sau đó tôi sẽ trả lời và bạn nhận xét.' },
+      { id: '3', type: 'constraints', title: 'Ràng buộc', content: 'CHỈ đặt ĐÚNG 1 câu hỏi. ĐỢI tôi trả lời. KHÔNG bao giờ tự trả lời.' }
+    ]
   }
 ];
 
