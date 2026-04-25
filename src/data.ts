@@ -12,6 +12,7 @@ export const AVAILABLE_BLOCKS = [
   { type: 'example' as BlockType, title: 'Ví dụ (Example)', description: 'Cung cấp ví dụ cụ thể về đầu vào hoặc đầu ra mong muốn (Few-shot prompting).' },
   { type: 'self_correction' as BlockType, title: 'Tự xem xét (Self-Correction)', description: 'Tạo vòng lặp để AI phân tích, đánh giá và tự sửa lỗi cho câu trả lời của mình.' },
   { type: 'anchor' as BlockType, title: 'Mỏ neo (Anchor)', description: 'Thiết lập câu mở đầu bắt buộc cho AI, loại bỏ câu chào hỏi thừa.' },
+  { type: 'custom' as BlockType, title: 'Tuỳ chỉnh (Custom)', description: 'Khối thông tin tự do, dùng khi các mục trên không đáp ứng được.' },
 ];
 
 export const TEMPLATES: PromptTemplate[] = [

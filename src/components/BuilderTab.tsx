@@ -25,6 +25,7 @@ const TYPE_STYLES: Record<string, { badge: string, border: string }> = {
   example: { badge: 'text-cyan-700 bg-cyan-50 ring-cyan-500/30', border: 'border-l-cyan-500' },
   self_correction: { badge: 'text-fuchsia-700 bg-fuchsia-50 ring-fuchsia-500/30', border: 'border-l-fuchsia-500' },
   anchor: { badge: 'text-teal-700 bg-teal-50 ring-teal-500/30', border: 'border-l-teal-500' },
+  custom: { badge: 'text-slate-700 bg-slate-50 ring-slate-500/30', border: 'border-l-slate-400' },
 };
 
 export default function BuilderTab({ initialTemplate, personas, activePersonaId, setActivePersonaId, onSaveTemplate }: BuilderTabProps) {
