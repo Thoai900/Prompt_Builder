@@ -13,6 +13,7 @@ import HomeTab from './components/HomeTab';
 import AIFutureTab from './components/AIFutureTab';
 import LearnTab from './components/LearnTab';
 import UtilityBeltTab from './components/UtilityBeltTab';
+import ChatWidget from './components/chat/ChatWidget';
 import { auth, db, loginWithGoogle, logoutUser, handleFirestoreError } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, getDocFromServer } from 'firebase/firestore';
@@ -330,6 +331,7 @@ export default function App() {
         </div>
       </main>
     </div>
+    <ChatWidget />
     </>
   );
 }

@@ -1,6 +1,17 @@
 import { GoogleGenAI } from "@google/genai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let _ai: GoogleGenAI | null = null;
+
+function getAI(): GoogleGenAI {
+  if (!_ai) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY chưa được cấu hình. Vui lòng tạo file .env và thêm API key hợp lệ từ Google AI Studio.');
+    }
+    _ai = new GoogleGenAI({ apiKey });
+  }
+  return _ai;
+}
 
 export type AiActionType = 'auto' | 'longer' | 'shorter' | 'professional' | 'casual' | 'fix_contradiction';
 
@@ -63,7 +74,7 @@ ${optimizedContext}
 Nội dung hiện tại cho [${blockTitle}]: "${currentText}".
 Sinh ra chính xác đoạn nội dung trực tiếp cần thiết để điền vào. KHÔNG GIẢI THÍCH, KHÔNG CHÀO HỎI.`;
 
-    const responseStream = await ai.models.generateContentStream({
+    const responseStream = await getAI().models.generateContentStream({
       model: 'gemini-3-flash-preview', // Update to faster model
       contents: currentText ? `Cải thiện đoạn: ${currentText}` : `Viết phần ${blockTitle}`,
       config: {
@@ -104,7 +115,7 @@ KHÔNG MỞ ĐẦU, KHÔNG GIẢI THÍCH, KHÔNG FORMAT MARKDOWN LOẠI BỎ (\`
 
     const prompt = `Điền các biến sau: ${variablesToFill.join(', ')}`;
 
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: 'gemini-3.1-pro-preview',
       contents: prompt,
       config: {
@@ -159,7 +170,7 @@ Bạn trả về một JSON Object duy nhất:
 KHÔNG TRẢ VỀ BẤT KỲ GÌ KHÁC NGOÀI JSON OBJECT.
 Chỉ trả về các key tương ứng với ID của khối (block ID), nội dung được format dưới dạng Markdown hoặc văn bản cực kỳ chất lượng.`;
 
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: 'gemini-3.1-pro-preview',
       contents: [
         {
@@ -214,7 +225,7 @@ Người dùng vừa gửi một yêu cầu rất ngắn. Tuy nhiên, hệ thố
 `;
     }
 
-    const responseStream = await ai.models.generateContentStream({
+    const responseStream = await getAI().models.generateContentStream({
       model: 'gemini-3.1-pro-preview',
       contents: shortInput,
       config: {
@@ -259,7 +270,7 @@ Trọng tâm: Cung cấp nội dung CHẤT LƯỢNG CAO, SẴN SÀNG SỬ DỤNG
 BẮT BUỘC trả về ĐÚNG ĐỊNH DẠNG JSON.
 KHÔNG MỞ ĐẦU, KHÔNG GIẢI THÍCH, KHÔNG FORMAT MARKDOWN.`;
 
-    const response = await ai.models.generateContent({
+    const response = await getAI().models.generateContent({
       model: 'gemini-3.1-pro-preview',
       contents: `Hãy tạo nội dung cho các khối tương ứng để giải quyết nhiệm vụ: "${topic}"`,
       config: {
