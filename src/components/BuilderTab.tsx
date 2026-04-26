@@ -25,6 +25,11 @@ const TYPE_STYLES: Record<string, { badge: string, border: string }> = {
   example: { badge: 'text-cyan-700 bg-cyan-50 ring-cyan-500/30', border: 'border-l-cyan-500' },
   self_correction: { badge: 'text-fuchsia-700 bg-fuchsia-50 ring-fuchsia-500/30', border: 'border-l-fuchsia-500' },
   anchor: { badge: 'text-teal-700 bg-teal-50 ring-teal-500/30', border: 'border-l-teal-500' },
+  objective: { badge: 'text-rose-700 bg-rose-50 ring-rose-500/30', border: 'border-l-rose-500' },
+  audience: { badge: 'text-amber-700 bg-amber-50 ring-amber-500/30', border: 'border-l-amber-500' },
+  experience: { badge: 'text-lime-700 bg-lime-50 ring-lime-500/30', border: 'border-l-lime-500' },
+  challenge: { badge: 'text-red-700 bg-red-50 ring-red-500/30', border: 'border-l-red-500' },
+  steps: { badge: 'text-emerald-700 bg-emerald-50 ring-emerald-500/30', border: 'border-l-emerald-500' },
   custom: { badge: 'text-slate-700 bg-slate-50 ring-slate-500/30', border: 'border-l-slate-400' },
 };
 
@@ -463,7 +468,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
       name: 'R.O.L.E Framework', 
       blocks: [
         { type: 'role', title: 'Vai trò (Role)', content: 'Bạn là {{Chuyên gia/Vai trò cụ thể}}' },
-        { type: 'task', title: 'Mục tiêu (Objective)', content: 'Tôi cần {{Hành động cụ thể}}' },
+        { type: 'objective', title: 'Mục tiêu (Objective)', content: 'Tôi cần {{Hành động cụ thể}}' },
         { type: 'context', title: 'Ngữ cảnh (Context)', content: 'Trong tình huống {{Bối cảnh chi tiết}}' },
         { type: 'format', title: 'Kỳ vọng (Expectation)', content: 'Kết quả cần {{Định dạng/Phong cách/Độ dài}}' }
       ] 
@@ -475,7 +480,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
         { type: 'context', title: 'Context (Ngữ cảnh)', content: '{{Mô tả tình huống/vấn đề}}' },
         { type: 'role', title: 'Role (Vai trò)', content: 'Hãy đóng vai {{Chuyên gia/nhân vật}}' },
         { type: 'example', title: 'Examples (Ví dụ)', content: 'Tham khảo phong cách {{Mẫu cụ thể}}' },
-        { type: 'task', title: 'Action (Hành động)', content: 'Hãy {{tạo/viết/phân tích/tối ưu}}' },
+        { type: 'objective', title: 'Action (Hành động)', content: 'Hãy {{tạo/viết/phân tích/tối ưu}}' },
         { type: 'format', title: 'Type (Kiểu dáng)', content: 'Dưới dạng {{Format cụ thể}}' },
         { type: 'constraints', title: 'Extras (Thêm)', content: 'Lưu ý {{Ràng buộc/yêu cầu đặc biệt}}' }
       ] 
@@ -484,13 +489,13 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
       id: 'persona', 
       name: 'P.E.R.S.O.N.A Framework', 
       blocks: [
-        { type: 'task', title: 'Purpose (Mục đích)', content: 'Tôi muốn {{Kết quả cuối cùng}}' },
-        { type: 'context', title: 'Experience (Kinh nghiệm)', content: 'Trình độ của tôi là {{Level}}' },
+        { type: 'objective', title: 'Purpose (Mục đích)', content: 'Tôi muốn {{Kết quả cuối cùng}}' },
+        { type: 'experience', title: 'Experience (Kinh nghiệm)', content: 'Trình độ của tôi là {{Level}}' },
         { type: 'example', title: 'Reference (Tham chiếu)', content: 'Tôi thích phong cách {{Mẫu/Tác giả}}' },
         { type: 'constraints', title: 'Specifics (Chi tiết)', content: 'Bao gồm {{Yêu cầu cụ thể}}' },
         { type: 'format', title: 'Output (Đầu ra)', content: 'Cho tôi {{Định dạng}}' },
         { type: 'tone', title: 'Nuance (Sắc thái)', content: 'Giọng điệu {{Tone mong muốn}}' },
-        { type: 'context', title: 'Audience (Đối tượng)', content: 'Người đọc/nghe là {{Ai}}' }
+        { type: 'audience', title: 'Audience (Đối tượng)', content: 'Người đọc/nghe là {{Ai}}' }
       ] 
     },
     { 
@@ -498,7 +503,7 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
       name: 'T.A.S.K Framework', 
       blocks: [
         { type: 'task', title: 'Task (Nhiệm vụ)', content: '{{Động từ hành động}} {{Đối tượng cụ thể}}' },
-        { type: 'context', title: 'Audience (Đối tượng)', content: 'Dành cho {{Ai}}' },
+        { type: 'audience', title: 'Audience (Đối tượng)', content: 'Dành cho {{Ai}}' },
         { type: 'tone', title: 'Style (Phong cách)', content: 'Theo kiểu {{Mô tả}}' },
         { type: 'constraints', title: 'Key points (Điểm chính)', content: 'Phải có {{Yêu cầu bắt buộc}}' }
       ] 
@@ -507,9 +512,9 @@ export default function BuilderTab({ initialTemplate, personas, activePersonaId,
       id: 'chain', 
       name: 'C.H.A.I.N Framework', 
       blocks: [
-        { type: 'context', title: 'Challenge (Thách thức)', content: 'Vấn đề tôi đang gặp là {{Mô tả}}' },
-        { type: 'task', title: 'Help needed (Cần giúp)', content: 'Tôi cần bạn giúp {{Hành động}}' },
-        { type: 'format', title: 'Approach (Cách tiếp cận)', content: 'Hãy làm theo các bước:\n- Bước 1: {{Phân tích/Nghiên cứu}}\n- Bước 2: {{Đề xuất/Tạo}}\n- Bước 3: {{Tối ưu/Tinh chỉnh}}' },
+        { type: 'challenge', title: 'Challenge (Thách thức)', content: 'Vấn đề tôi đang gặp là {{Mô tả}}' },
+        { type: 'objective', title: 'Help needed (Cần giúp)', content: 'Tôi cần bạn giúp {{Hành động}}' },
+        { type: 'steps', title: 'Approach (Cách tiếp cận)', content: 'Hãy làm theo các bước:\n- Bước 1: {{Phân tích/Nghiên cứu}}\n- Bước 2: {{Đề xuất/Tạo}}\n- Bước 3: {{Tối ưu/Tinh chỉnh}}' },
         { type: 'input_data', title: 'Input (Đầu vào)', content: 'Thông tin tôi có: {{Dữ liệu}}' },
         { type: 'task', title: 'Next steps (Bước tiếp theo)', content: 'Sau đó hãy {{Yêu cầu cuối}}' }
       ] 

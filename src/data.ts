@@ -12,6 +12,11 @@ export const AVAILABLE_BLOCKS = [
   { type: 'example' as BlockType, title: 'Ví dụ (Example)', description: 'Cung cấp ví dụ cụ thể về đầu vào hoặc đầu ra mong muốn (Few-shot prompting).' },
   { type: 'self_correction' as BlockType, title: 'Tự xem xét (Self-Correction)', description: 'Tạo vòng lặp để AI phân tích, đánh giá và tự sửa lỗi cho câu trả lời của mình.' },
   { type: 'anchor' as BlockType, title: 'Mỏ neo (Anchor)', description: 'Thiết lập câu mở đầu bắt buộc cho AI, loại bỏ câu chào hỏi thừa.' },
+  { type: 'objective' as BlockType, title: 'Mục tiêu (Objective)', description: 'Xác định mục đích hoặc kết quả cuối cùng mong muốn của người dùng.' },
+  { type: 'audience' as BlockType, title: 'Đối tượng (Audience)', description: 'Chỉ định rõ người đọc, người nghe hoặc nhóm khách hàng mục tiêu.' },
+  { type: 'experience' as BlockType, title: 'Trình độ (Experience)', description: 'Mô tả kinh nghiệm, cấp độ hiểu biết của bản thân để AI điều chỉnh nội dung cho phù hợp.' },
+  { type: 'challenge' as BlockType, title: 'Thách thức (Challenge)', description: 'Nêu rõ vấn đề, điểm nghẽn hoặc khó khăn đang gặp phải cần AI giải quyết.' },
+  { type: 'steps' as BlockType, title: 'Các bước (Approach)', description: 'Định hướng cho AI cách tiếp cận để giải quyết vấn đề theo từng bước cụ thể.' },
   { type: 'custom' as BlockType, title: 'Tuỳ chỉnh (Custom)', description: 'Khối thông tin tự do, dùng khi các mục trên không đáp ứng được.' },
 ];
 
