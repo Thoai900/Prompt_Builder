@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { TEMPLATES } from '../data';
+import { PROJECT_SETUP_PACKS, TEMPLATES } from '../data';
 import { PromptTemplate } from '../types';
 import { Search, Filter } from 'lucide-react';
 
@@ -20,7 +20,7 @@ export default function LibraryTab({ onSelectTemplate, customTemplates = [] }: L
     category: t.category || 'Mẫu của tôi'
   }));
 
-  const allTemplates = [...processedCustomTemplates, ...TEMPLATES];
+  const allTemplates = [...processedCustomTemplates, ...PROJECT_SETUP_PACKS, ...TEMPLATES];
 
   const filteredTemplates = useMemo(() => {
     return allTemplates.filter(template => {
