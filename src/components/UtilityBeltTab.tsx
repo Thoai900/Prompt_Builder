@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { Sparkles, Zap, Package, Send, Loader2, ArrowRight, Save } from 'lucide-react';
 import { DAILY_PACKS } from '../data';
 import { PromptTemplate } from '../types';
 import { generateQuickResponse } from '../services/aiService';
-import AIResponseRenderer from './AIResponseRenderer';
 import { User } from 'firebase/auth';
+
+const AIResponseRenderer = lazy(() => import('./AIResponseRenderer'));
 
 interface UtilityBeltTabProps {
   user: User | null;
@@ -153,7 +154,9 @@ export default function UtilityBeltTab({ user, onSaveTemplate }: UtilityBeltTabP
         {/* AI Response Output */}
         {response && (
            <div className="mb-10">
-             <AIResponseRenderer content={response} />
+             <Suspense fallback={<ResponseRendererSkeleton />}>
+               <AIResponseRenderer content={response} />
+             </Suspense>
            </div>
         )}
 
@@ -196,6 +199,20 @@ export default function UtilityBeltTab({ user, onSaveTemplate }: UtilityBeltTabP
           </div>
         </div>
 
+      </div>
+    </div>
+  );
+}
+
+function ResponseRendererSkeleton() {
+  return (
+    <div className="animate-pulse rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="h-5 w-40 rounded-full bg-slate-200" />
+      <div className="mt-4 space-y-3">
+        <div className="h-4 w-full rounded-full bg-slate-100" />
+        <div className="h-4 w-11/12 rounded-full bg-slate-100" />
+        <div className="h-4 w-9/12 rounded-full bg-slate-100" />
+        <div className="mt-6 h-40 rounded-xl bg-slate-100" />
       </div>
     </div>
   );

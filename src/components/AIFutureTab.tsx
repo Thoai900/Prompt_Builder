@@ -23,7 +23,7 @@ import {
   Zap
 } from 'lucide-react';
 import { companyNodes, feedItems, llmModels, regionPulse, type CompanyNode, type FeedItem, type LlmModel, type RegionPulse } from '../data/llmLandscape';
-import InteractiveGlobe from './llm/InteractiveGlobe';
+import DetailedWorldMap from './llm/DetailedWorldMap';
 
 type ThemeMode = 'dark' | 'light';
 
@@ -285,7 +285,7 @@ export default function AIFutureTab() {
 
               <div className="grid gap-4 lg:grid-cols-[1.25fr_0.75fr]">
                 <div className="space-y-4">
-                  <InteractiveGlobe
+                  <DetailedWorldMap
                     companyNodes={companyNodes}
                     hoveredNodeId={hoveredNode.id}
                     focusedCompany={focusedModel.company}
