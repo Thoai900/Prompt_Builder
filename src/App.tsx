@@ -3,20 +3,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { TabType, PromptTemplate, Workspace, AiPersona } from './types';
 import { Layers, Library, Sparkles, Home, LogIn, LogOut, Zap, Package } from 'lucide-react';
-import LibraryTab from './components/LibraryTab';
-import BuilderTab from './components/BuilderTab';
-import EnhancerTab from './components/EnhancerTab';
 import HomeTab from './components/HomeTab';
-import AIFutureTab from './components/AIFutureTab';
-import LearnTab from './components/LearnTab';
-import UtilityBeltTab from './components/UtilityBeltTab';
 import ChatWidget from './components/chat/ChatWidget';
 import { auth, db, loginWithGoogle, logoutUser, handleFirestoreError } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, getDocFromServer } from 'firebase/firestore';
+
+const BuilderTab = lazy(() => import('./components/BuilderTab'));
+const LibraryTab = lazy(() => import('./components/LibraryTab'));
+const EnhancerTab = lazy(() => import('./components/EnhancerTab'));
+const LearnTab = lazy(() => import('./components/LearnTab'));
+const UtilityBeltTab = lazy(() => import('./components/UtilityBeltTab'));
+const AIFutureTab = lazy(() => import('./components/AIFutureTab'));
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
@@ -312,27 +313,79 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col relative bg-slate-50 w-full h-full overflow-hidden">
         <div className={activeTab === 'builder' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <BuilderTab initialTemplate={loadedTemplate} personas={personas} activePersonaId={activePersonaId} setActivePersonaId={setActivePersonaId} onSaveTemplate={handleSaveTemplate} />
+          <Suspense fallback={<TabSurfaceSkeleton />}>
+            <BuilderTab initialTemplate={loadedTemplate} personas={personas} activePersonaId={activePersonaId} setActivePersonaId={setActivePersonaId} onSaveTemplate={handleSaveTemplate} />
+          </Suspense>
         </div>
         <div className={activeTab === 'library' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <LibraryTab onSelectTemplate={handleSelectTemplate} customTemplates={customTemplates} />
+          <Suspense fallback={<TabSurfaceSkeleton />}>
+            <LibraryTab onSelectTemplate={handleSelectTemplate} customTemplates={customTemplates} />
+          </Suspense>
         </div>
         <div className={activeTab === 'enhancer' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <EnhancerTab onApplyTemplate={handleSelectTemplate} />
+          <Suspense fallback={<TabSurfaceSkeleton />}>
+            <EnhancerTab onApplyTemplate={handleSelectTemplate} />
+          </Suspense>
         </div>
         <div className={activeTab === 'learn' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <LearnTab />
+          <Suspense fallback={<TabSurfaceSkeleton />}>
+            <LearnTab />
+          </Suspense>
         </div>
         <div className={activeTab === 'aifuture' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <AIFutureTab />
+          <Suspense fallback={<AIFutureTabSkeleton />}>
+            <AIFutureTab />
+          </Suspense>
         </div>
         <div className={activeTab === 'utilitybelt' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <UtilityBeltTab user={user} onSaveTemplate={handleSaveTemplate} />
+          <Suspense fallback={<TabSurfaceSkeleton />}>
+            <UtilityBeltTab user={user} onSaveTemplate={handleSaveTemplate} />
+          </Suspense>
         </div>
       </main>
     </div>
     <ChatWidget />
     </>
+  );
+}
+
+function AIFutureTabSkeleton() {
+  return (
+    <div className="h-full w-full overflow-hidden bg-[#07111f] p-4 md:p-6">
+      <div className="h-full w-full animate-pulse overflow-y-auto rounded-[28px] border border-white/10 bg-white/5 p-5 md:p-6">
+        <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
+          <div className="space-y-4">
+            <div className="h-8 w-40 rounded-full bg-white/10" />
+            <div className="h-16 max-w-3xl rounded-3xl bg-white/10" />
+            <div className="h-6 max-w-2xl rounded-3xl bg-white/8" />
+            <div className="grid gap-4 sm:grid-cols-3">
+              {[0, 1, 2].map((item) => (
+                <div key={item} className="h-36 rounded-[22px] bg-white/8" />
+              ))}
+            </div>
+          </div>
+          <div className="h-[320px] rounded-[24px] bg-white/8" />
+        </div>
+        <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
+          <div className="h-[480px] rounded-[24px] bg-white/8" />
+          <div className="h-[480px] rounded-[24px] bg-white/8" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TabSurfaceSkeleton() {
+  return (
+    <div className="h-full w-full animate-pulse overflow-hidden bg-slate-50 p-4 md:p-6">
+      <div className="grid h-full gap-4 md:grid-cols-[280px_1fr]">
+        <div className="rounded-3xl bg-white" />
+        <div className="grid gap-4">
+          <div className="h-20 rounded-3xl bg-white" />
+          <div className="flex-1 rounded-3xl bg-white" />
+        </div>
+      </div>
+    </div>
   );
 }
 

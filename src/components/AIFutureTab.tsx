@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import {
   Activity,
   ArrowUpRight,
+  ArrowUp,
   Binary,
   Bot,
   CheckCircle2,
@@ -17,10 +18,12 @@ import {
   Search,
   Sparkles,
   SunMedium,
+  TrendingUp,
   X,
   Zap
 } from 'lucide-react';
-import { companyNodes, feedItems, llmModels, worldMapPaths, type CompanyNode, type FeedItem, type LlmModel } from '../data/llmLandscape';
+import { companyNodes, feedItems, llmModels, regionPulse, type CompanyNode, type FeedItem, type LlmModel, type RegionPulse } from '../data/llmLandscape';
+import InteractiveGlobe from './llm/InteractiveGlobe';
 
 type ThemeMode = 'dark' | 'light';
 
@@ -96,6 +99,9 @@ export default function AIFutureTab() {
   const highlightedNode = companyNodes.find((node) => node.company === focusedModel.company);
   const hoveredNode = companyNodes.find((node) => node.id === hoveredNodeId) ?? highlightedNode ?? companyNodes[0];
   const activeFeed = feedItems[activeFeedIndex];
+  const strongestRegion = [...regionPulse].sort((left, right) => right.avgScore - left.avgScore)[0];
+  const openModelCount = llmModels.filter((model) => model.access === 'open-source').length;
+  const closedModelCount = llmModels.length - openModelCount;
 
   const dashboardTone =
     themeMode === 'dark'
@@ -163,22 +169,22 @@ export default function AIFutureTab() {
                   themeMode={themeMode}
                   icon={<Globe size={18} />}
                   label="Tracked regions"
-                  value="3 hubs"
-                  delta="+2 active releases"
+                  value={`${regionPulse.length} hubs`}
+                  delta={`${strongestRegion.region} leads on composite score`}
                 />
                 <KpiCard
                   themeMode={themeMode}
                   icon={<Bot size={18} />}
                   label="Frontier models"
                   value={`${llmModels.length}`}
-                  delta="Across open and closed ecosystems"
+                  delta={`${closedModelCount} closed · ${openModelCount} open`}
                 />
                 <KpiCard
                   themeMode={themeMode}
                   icon={<Zap size={18} />}
                   label="Fastest momentum"
-                  value={activeFeed.title.split(' ').slice(0, 2).join(' ')}
-                  delta={activeFeed.timestamp}
+                  value={focusedModel.name}
+                  delta={`Velocity ${focusedModel.releaseVelocity}/10`}
                 />
               </div>
             </div>
@@ -277,58 +283,24 @@ export default function AIFutureTab() {
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(56,189,248,0.16),transparent_24%),radial-gradient(circle_at_80%_10%,rgba(217,70,239,0.14),transparent_24%),linear-gradient(180deg,transparent,rgba(10,18,34,0.14))]" />
               <div className={`pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,transparent_0%,transparent_48%,rgba(255,255,255,0.04)_50%,transparent_52%,transparent_100%),linear-gradient(to_bottom,transparent_0%,transparent_48%,rgba(255,255,255,0.04)_50%,transparent_52%,transparent_100%)] bg-[size:80px_80px] ${themeMode === 'dark' ? 'opacity-70' : 'opacity-30'}`} />
 
-              <motion.div
-                animate={{ scale: [1, 1.018, 1], x: [0, 6, 0], y: [0, -4, 0] }}
-                transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
-                className="relative aspect-[16/9] w-full"
-              >
-                <svg viewBox="0 0 760 330" className="h-full w-full">
-                  {worldMapPaths.map((path, index) => (
-                    <path
-                      key={path}
-                      d={path}
-                      className={`${dashboardTone.mapFill} ${dashboardTone.mapStroke}`}
-                      strokeWidth="1.4"
-                      opacity={0.95 - index * 0.05}
-                    />
-                  ))}
-                  {companyNodes.map((node) => {
-                    const isActive = node.id === hoveredNode.id || node.company === focusedModel.company;
+              <div className="grid gap-4 lg:grid-cols-[1.25fr_0.75fr]">
+                <div className="space-y-4">
+                  <InteractiveGlobe
+                    companyNodes={companyNodes}
+                    hoveredNodeId={hoveredNode.id}
+                    focusedCompany={focusedModel.company}
+                    themeMode={themeMode}
+                    onHoverNode={setHoveredNodeId}
+                    onSelectNode={(node) => {
+                      setHoveredNodeId(node.id);
+                      const nextModel = llmModels.find((model) => model.company === node.company);
+                      if (nextModel) {
+                        setSelectedModelId(nextModel.id);
+                      }
+                    }}
+                  />
 
-                    return (
-                      <g key={node.id}>
-                        <motion.circle
-                          cx={(node.x / 100) * 760}
-                          cy={(node.y / 100) * 330}
-                          r={isActive ? 11 : 8}
-                          fill={themeMode === 'dark' ? 'rgba(34,211,238,0.18)' : 'rgba(14,165,233,0.18)'}
-                          animate={{ scale: isActive ? [1, 1.3, 1] : 1 }}
-                          transition={{ duration: 2.2, repeat: Infinity }}
-                        />
-                        <motion.circle
-                          cx={(node.x / 100) * 760}
-                          cy={(node.y / 100) * 330}
-                          r={isActive ? 4.8 : 3.6}
-                          fill={node.tier === 'frontier' ? '#67e8f9' : node.tier === 'research' ? '#c084fc' : '#f9a8d4'}
-                          className="cursor-pointer"
-                          onMouseEnter={() => setHoveredNodeId(node.id)}
-                          onFocus={() => setHoveredNodeId(node.id)}
-                          onClick={() => {
-                            setHoveredNodeId(node.id);
-                            const nextModel = llmModels.find((model) => model.company === node.company);
-                            if (nextModel) {
-                              setSelectedModelId(nextModel.id);
-                            }
-                          }}
-                          whileHover={{ scale: 1.35 }}
-                        />
-                      </g>
-                    );
-                  })}
-                </svg>
-
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center px-3 pb-3">
-                  <div className={`grid w-full max-w-2xl gap-3 rounded-[22px] border p-3 backdrop-blur-xl md:grid-cols-[1fr_auto] ${themeMode === 'dark' ? 'border-white/10 bg-slate-950/45' : 'border-white/80 bg-white/75'}`}>
+                  <div className={`grid w-full gap-3 rounded-[22px] border p-3 backdrop-blur-xl md:grid-cols-[1fr_auto] ${themeMode === 'dark' ? 'border-white/10 bg-slate-950/45' : 'border-white/80 bg-white/75'}`}>
                     <div>
                       <p className={`text-[11px] uppercase tracking-[0.24em] ${dashboardTone.muted}`}>Hovered hub</p>
                       <div className="mt-2 flex flex-wrap items-center gap-3">
@@ -344,7 +316,9 @@ export default function AIFutureTab() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+
+                <OrbitalRegionPulse themeMode={themeMode} regions={regionPulse} />
+              </div>
             </div>
           </motion.section>
 
@@ -445,6 +419,25 @@ export default function AIFutureTab() {
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.14 }}
+            className={`rounded-[28px] border p-4 backdrop-blur-2xl md:p-5 ${dashboardTone.panel}`}
+          >
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div>
+                <p className={`text-xs uppercase tracking-[0.24em] ${dashboardTone.muted}`}>Signal analytics</p>
+                <h2 className="mt-1 text-xl font-semibold">Benchmark momentum grid</h2>
+              </div>
+            </div>
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {filteredModels.map((model) => (
+                <TrendCard key={model.id} model={model} themeMode={themeMode} onSelect={() => setSelectedModelId(model.id)} />
+              ))}
+            </div>
+          </motion.section>
+
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -606,6 +599,142 @@ function ApiHint({ title, children, themeMode }: { title: string; children: Reac
   );
 }
 
+function OrbitalRegionPulse({ regions, themeMode }: { regions: RegionPulse[]; themeMode: ThemeMode }) {
+  return (
+    <div className={`relative overflow-hidden rounded-[24px] border p-4 ${themeMode === 'dark' ? 'border-white/10 bg-white/[0.04]' : 'border-white/80 bg-white/70'}`}>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className={`text-xs uppercase tracking-[0.18em] ${themeMode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Regional pulse</p>
+          <h3 className="mt-1 text-lg font-semibold">Orbit view</h3>
+        </div>
+        <TrendingUp size={18} className={themeMode === 'dark' ? 'text-cyan-300' : 'text-sky-600'} />
+      </div>
+
+      <div className="relative mt-4 aspect-square">
+        <div className={`absolute inset-[12%] rounded-full border ${themeMode === 'dark' ? 'border-cyan-300/14' : 'border-sky-300/40'}`} />
+        <div className={`absolute inset-[24%] rounded-full border ${themeMode === 'dark' ? 'border-fuchsia-300/14' : 'border-violet-300/35'}`} />
+        <div className={`absolute inset-[36%] rounded-full border ${themeMode === 'dark' ? 'border-emerald-300/14' : 'border-emerald-300/35'}`} />
+        <div className={`absolute left-1/2 top-1/2 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border ${themeMode === 'dark' ? 'border-white/10 bg-cyan-300/10' : 'border-white bg-white/85'} flex items-center justify-center`}>
+          <Globe size={24} className={themeMode === 'dark' ? 'text-cyan-200' : 'text-sky-700'} />
+        </div>
+
+        {regions.map((region, index) => {
+          const angle = Math.PI * 2 * region.orbitOffset - Math.PI / 2;
+          const radius = 42 + index * 34;
+          const x = 50 + Math.cos(angle) * radius;
+          const y = 50 + Math.sin(angle) * radius;
+
+          return (
+            <motion.div
+              key={region.region}
+              className="absolute"
+              style={{ left: `${x}%`, top: `${y}%` }}
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 18 + index * 4, repeat: Infinity, ease: 'linear' }}
+            >
+              <div className={`-translate-x-1/2 -translate-y-1/2 rounded-2xl border px-3 py-2 backdrop-blur-xl ${themeMode === 'dark' ? 'border-white/10 bg-slate-950/75' : 'border-white bg-white/92'}`}>
+                <p className="text-xs font-semibold">{region.region}</p>
+                <p className={`mt-1 text-[11px] ${themeMode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{region.releases30d} releases / 30d</p>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {regions.map((region) => (
+          <div key={region.region} className={`rounded-2xl p-3 ${themeMode === 'dark' ? 'bg-white/6' : 'bg-slate-100'}`}>
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-medium">{region.region}</span>
+              <span className={themeMode === 'dark' ? 'text-cyan-200' : 'text-sky-700'}>{region.avgScore}</span>
+            </div>
+            <div className="mt-2 h-2 rounded-full bg-black/10">
+              <div
+                className={`h-2 rounded-full ${themeMode === 'dark' ? 'bg-gradient-to-r from-cyan-300 via-sky-400 to-fuchsia-400' : 'bg-gradient-to-r from-sky-400 via-cyan-400 to-violet-400'}`}
+                style={{ width: `${region.avgScore}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TrendCard({ model, themeMode, onSelect }: { model: LlmModel; themeMode: ThemeMode; onSelect: () => void }) {
+  const trendDelta = model.benchmarkHistory[model.benchmarkHistory.length - 1] - model.benchmarkHistory[0];
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={`rounded-[24px] border p-4 text-left transition ${themeMode === 'dark' ? 'border-white/10 bg-white/[0.04] hover:bg-white/[0.07]' : 'border-white/80 bg-white/82 hover:bg-white'}`}
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-base font-semibold">{model.name}</p>
+          <p className={`mt-1 text-sm ${themeMode === 'dark' ? 'text-slate-300' : 'text-slate-600'}`}>{model.company}</p>
+        </div>
+        <div className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${themeMode === 'dark' ? 'bg-emerald-400/12 text-emerald-200' : 'bg-emerald-100 text-emerald-700'}`}>
+          <ArrowUp size={12} />
+          +{trendDelta}
+        </div>
+      </div>
+
+      <div className="mt-4 h-20">
+        <Sparkline values={model.benchmarkHistory} themeMode={themeMode} />
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
+        <MetricBadge label="Score" value={`${model.benchmarkScore}`} themeMode={themeMode} />
+        <MetricBadge label="Adoption" value={`${model.adoptionIndex}`} themeMode={themeMode} />
+        <MetricBadge label="Velocity" value={`${model.releaseVelocity}/10`} themeMode={themeMode} />
+      </div>
+    </button>
+  );
+}
+
+function Sparkline({ values, themeMode }: { values: number[]; themeMode: ThemeMode }) {
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = Math.max(max - min, 1);
+  const points = values
+    .map((value, index) => {
+      const x = (index / (values.length - 1)) * 100;
+      const y = 100 - ((value - min) / range) * 100;
+      return `${x},${y}`;
+    })
+    .join(' ');
+
+  return (
+    <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="h-full w-full overflow-visible">
+      <defs>
+        <linearGradient id={`spark-${themeMode}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor={themeMode === 'dark' ? '#67e8f9' : '#0ea5e9'} />
+          <stop offset="100%" stopColor={themeMode === 'dark' ? '#e879f9' : '#8b5cf6'} />
+        </linearGradient>
+      </defs>
+      <polyline
+        fill="none"
+        stroke={`url(#spark-${themeMode})`}
+        strokeWidth="4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points={points}
+      />
+    </svg>
+  );
+}
+
+function MetricBadge({ label, value, themeMode }: { label: string; value: string; themeMode: ThemeMode }) {
+  return (
+    <div className={`rounded-2xl p-3 ${themeMode === 'dark' ? 'bg-white/6' : 'bg-slate-100'}`}>
+      <p className={`text-[11px] uppercase tracking-[0.18em] ${themeMode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>{label}</p>
+      <p className="mt-2 font-medium">{value}</p>
+    </div>
+  );
+}
+
 function DetailPanel({
   model,
   node,
@@ -679,6 +808,37 @@ function DetailPanel({
               <TelemetryCell label="Context" value={model.contextWindow} themeMode={themeMode} />
               <TelemetryCell label="Latency" value={model.latency} themeMode={themeMode} />
               <TelemetryCell label="Updated" value={model.lastUpdated} themeMode={themeMode} />
+            </div>
+          </div>
+
+          <div className={`rounded-[22px] border p-4 ${themeMode === 'dark' ? 'border-white/10 bg-white/[0.04]' : 'border-white/80 bg-white/80'}`}>
+            <div className="flex items-center justify-between gap-3">
+              <p className={`text-xs uppercase tracking-[0.18em] ${themeMode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Benchmark trend</p>
+              <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${themeMode === 'dark' ? 'bg-emerald-400/12 text-emerald-200' : 'bg-emerald-100 text-emerald-700'}`}>
+                <TrendingUp size={12} />
+                +{model.benchmarkHistory[model.benchmarkHistory.length - 1] - model.benchmarkHistory[0]}
+              </span>
+            </div>
+            <div className="mt-4 h-24">
+              <Sparkline values={model.benchmarkHistory} themeMode={themeMode} />
+            </div>
+            <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <TelemetryCell label="Adoption" value={`${model.adoptionIndex}`} themeMode={themeMode} />
+              <TelemetryCell label="Velocity" value={`${model.releaseVelocity}/10`} themeMode={themeMode} />
+            </div>
+          </div>
+
+          <div className={`rounded-[22px] border p-4 ${themeMode === 'dark' ? 'border-white/10 bg-white/[0.04]' : 'border-white/80 bg-white/80'}`}>
+            <p className={`text-xs uppercase tracking-[0.18em] ${themeMode === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Closest rivals</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {model.rivals.map((rival) => (
+                <span
+                  key={rival}
+                  className={`rounded-full border px-3 py-1.5 text-xs ${themeMode === 'dark' ? 'border-white/10 bg-white/6 text-slate-200' : 'border-slate-200 bg-slate-100 text-slate-700'}`}
+                >
+                  {rival}
+                </span>
+              ))}
             </div>
           </div>
 
