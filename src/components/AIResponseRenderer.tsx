@@ -2,6 +2,8 @@ import React from 'react';
 import ReactMarkdown, { Components } from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Brain, Sparkles, Copy, Check } from 'lucide-react';
 
 interface AIResponseRendererProps {
@@ -31,9 +33,15 @@ const CodeBlock = ({ node, inline, className, children, ...props }: any) => {
             <span>{copied ? 'Copied' : 'Copy'}</span>
           </button>
         </div>
-        <pre className="m-0 overflow-x-auto p-4 text-sm leading-6 text-slate-100">
-          <code {...props}>{String(children).replace(/\n$/, '')}</code>
-        </pre>
+        <SyntaxHighlighter
+          style={vscDarkPlus}
+          language={match[1]}
+          PreTag="div"
+          customStyle={{ margin: 0, padding: '1rem', background: 'transparent' }}
+          {...props}
+        >
+          {String(children).replace(/\n$/, '')}
+        </SyntaxHighlighter>
       </div>
     );
   }

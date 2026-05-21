@@ -27,6 +27,13 @@ export const TEMPLATES: PromptTemplate[] = [
     title: '🧠 Gia sư Toán/Lý/Hóa Tận Tâm',
     description: 'Hướng dẫn tư duy từng bước, không giải hộ, giúp học sinh thực thụ rèn luyện kỹ năng giải quyết vấn đề.',
     category: 'Học sinh/Sinh viên',
+    outputExample: {
+      type: 'tutor',
+      title: 'Mẫu phân tích tư duy',
+      description: 'Phân tích từng bước, không đưa ra đáp án ngay',
+      input: 'Giải pt: x^2 - 4x + 4 = 0 cho em với',
+      content: ''
+    },
     blocks: [
       { id: '1', type: 'role', title: 'Vai trò (Role)', content: 'Bạn là một gia sư {{Môn học}} xuất sắc và tâm lý. Nhiệm vụ của bạn là hướng dẫn tôi (đang học lớp {{Khối lớp}}).' },
       { id: '2', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Dưới đây là bài tập tôi cần giải: {{Đề bài}}.\nTuyệt đối KHÔNG đưa ra đáp án cuối cùng ngay lập tức.' },
@@ -51,6 +58,12 @@ export const TEMPLATES: PromptTemplate[] = [
     title: '🗺️ Trợ lý Sơ đồ Tư duy & Tóm tắt',
     description: 'Biến văn bản lịch sử, địa lý dài thòng thành Bullet points và Sơ đồ tư duy (Mindmap) dễ nhớ.',
     category: 'Học sinh/Sinh viên',
+    outputExample: {
+      type: 'mindmap',
+      title: 'Mẫu cấu trúc Mindmap',
+      description: 'Chuyển văn bản dài thành cấu trúc Node trực quan',
+      input: 'Lịch sử Việt Nam dân chủ cộng hòa...'
+    },
     blocks: [
       { id: '21', type: 'role', title: 'Vai trò (Role)', content: 'Bạn là chuyên gia về phương pháp học tập siêu tốc (Accelerated Learning) và chuyên gia tạo Sơ đồ tư duy.' },
       { id: '22', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Tôi có một đoạn văn bản dài của môn {{Môn học}} dưới đây: {{Dán nội dung bài học hoặc sách giáo khoa}}. Tôi rất khó ghi nhớ nó. Hãy giúp tôi cấu trúc lại đoạn văn này.' },
@@ -76,6 +89,12 @@ export const TEMPLATES: PromptTemplate[] = [
     title: '📝 Cỗ máy Viết Blog & Content',
     description: 'Bộ khung tiêu chuẩn SEO và Storytelling để tạo các bài viết blog, báo chuyên ngành mạnh mẽ.',
     category: 'Người đi làm',
+    outputExample: {
+      type: 'text',
+      title: 'Cấu trúc bài viết',
+      description: 'H1 ngắn gọn, có đoạn Hook, H2 định dạng Markdown',
+      content: ''
+    },
     blocks: [
       { id: '41', type: 'role', title: 'Vai trò (Role)', content: 'Bạn là một Chuyên gia Viết bài (Master Copywriter) và là một Biên tập viên SEO dày dặn kinh nghiệm, chuyên phân tích sâu sắc tâm lý người đọc.' },
       { id: '42', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Mục tiêu chính: Viết một bài viết toàn diện, chuyên sâu và thu hút người đọc (khoảng 1500-2000 từ) về chủ đề: {{Chủ Đề Cốt Lõi}}.\nPhải bao gồm từ khóa SEO chính: {{Từ Khóa SEO}}.' },
@@ -90,6 +109,12 @@ export const TEMPLATES: PromptTemplate[] = [
     title: '💻 Tech Lead & Code Reviewer',
     description: 'Xây dựng cấu trúc phần mềm, review code, tìm bug, hoặc tối ưu thuật toán như một kiến trúc sư hệ thống.',
     category: 'Người đi làm',
+    outputExample: {
+      type: 'code',
+      title: 'Mẫu mã nguồn',
+      description: 'Làm nổi bật đoạn mã, giải thích Time/Space Complexity',
+      content: ''
+    },
     blocks: [
       { id: '51', type: 'role', title: 'Vai trò (Role)', content: 'Bạn là Kiến trúc sư Hệ thống (Solutions Architect) và Senior Software Engineer am hiểu chuyên sâu về: {{Ngôn Ngữ Lập Trình}}.' },
       { id: '52', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Hãy thực hiện tính năng/câu hỏi sau: {{Mô Tả Chức Năng Cần Code hoặc Code Bị Lỗi}}.' },
@@ -103,6 +128,12 @@ export const TEMPLATES: PromptTemplate[] = [
     title: '📈 Chiến Lược Gia Marketing',
     description: 'Thiết kế bản kế hoạch bao phủ mọi nền tảng cho chiến dịch quảng cáo và phân tích đối tượng mục tiêu.',
     category: 'Người đi làm',
+    outputExample: {
+      type: 'ui',
+      title: 'Mẫu cấu trúc Dashboard',
+      description: 'Hiển thị Campaign, Concept, và KPI trực quan',
+      content: ''
+    },
     blocks: [
       { id: '61', type: 'role', title: 'Vai trò (Role)', content: 'Bạn là Giám đốc Marketing (CMO) am hiểu số liệu thực tiễn và tâm lý học.' },
       { id: '62', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Thiết lập chiến dịch Marketing cho sản phẩm: {{Tên Sản Phẩm}}.\nMục tiêu KPIs cần đạt: {{Mục Tiêu Doanh Số / Lượt Tải}}.' },
@@ -122,6 +153,23 @@ export const TEMPLATES: PromptTemplate[] = [
       { id: '72', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Tôi muốn bắt đầu hành trình: {{Mục Tiêu Cá Nhân Cần Đạt}}.\nHãy lập biểu đồ lộ trình từng bước.' },
       { id: '73', type: 'context', title: 'Ngữ cảnh (Context)', content: 'Quỹ thời gian tôi có thể dành ra mỗi ngày: {{Số Giờ Học Mỗi Ngày}}.' },
       { id: '74', type: 'format', title: 'Định dạng (Format)', content: 'Tạo danh sách phân rã (Break-down List) theo Tuần.' }
+    ]
+  },
+  {
+    id: 'master-video-script',
+    title: '🎬 Cỗ máy Kịch bản Video Ngắn',
+    description: 'Chuyển đổi ý tưởng thành kịch bản TikTok/Reels/Shorts hoàn chỉnh với hook hấp dẫn.',
+    category: 'Sáng tạo nội dung',
+    outputExample: {
+      type: 'video',
+      title: 'Mẫu Kịch bản Video',
+      description: 'Khung video dọc với Subtitle minh họa',
+      input: 'Làm sao để học code nhanh không nản?'
+    },
+    blocks: [
+      { id: '91', type: 'role', title: 'Vai trò (Role)', content: 'Bạn là chuyên gia sáng tạo kịch bản video ngắn (Master Scriptwriter) trên TikTok, Reels và Shorts.' },
+      { id: '92', type: 'task', title: 'Nhiệm vụ (Task)', content: 'Tôi có ý tưởng: {{Ý tưởng video}}. Hãy viết cho tôi một kịch bản video thời lượng 30-60 giây.' },
+      { id: '93', type: 'format', title: 'Định dạng (Format)', content: 'Chia kịch bản làm 2 cột: [Hình ảnh/Âm thanh] và [Lời thoại (Subtitle)].\nPhải có 3 giây Hook đầu tiên cực kỳ thu hút.' }
     ]
   },
   {
@@ -313,84 +361,6 @@ export const DAILY_PACKS: PromptTemplate[] = [
       { id: '1', type: 'role', title: 'Vai trò', content: 'Giám đốc Nhân sự (HR Director & Hiring Manager).' },
       { id: '2', type: 'task', title: 'Nhiệm vụ', content: 'Tôi sắp phỏng vấn vị trí: {{Tên vị trí công việc}}. Hãy đặt cho tôi 1 câu hỏi chuyên sâu, sau đó tôi sẽ trả lời và bạn nhận xét.' },
       { id: '3', type: 'constraints', title: 'Ràng buộc', content: 'CHỈ đặt ĐÚNG 1 câu hỏi. ĐỢI tôi trả lời. KHÔNG bao giờ tự trả lời.' }
-    ]
-  }
-];
-
-export const PROJECT_SETUP_PACKS: PromptTemplate[] = [
-  {
-    id: 'chatgpt-project-kickoff',
-    title: 'ChatGPT Project Kickoff',
-    description: 'Dong goi bo setup mo dau cho mot project ChatGPT moi: muc tieu, pham vi, cach lam viec, deliverables va quy tac hop tac.',
-    category: 'Project Setup Packs',
-    tags: ['chatgpt', 'project', 'kickoff'],
-    blocks: [
-      { id: '1', type: 'role', title: 'Vai tro', content: 'Ban la AI Project Copilot cho project ChatGPT mang ten {{Ten project}}. Vai tro cua ban la giu context nhat quan, phan tich yeu cau ro rang va ho tro toi lam viec theo huong action-oriented.' },
-      { id: '2', type: 'objective', title: 'Muc tieu', content: 'Muc tieu kinh doanh/chuyen mon cua project nay la: {{Muc tieu chinh}}. Thanh cong duoc do bang: {{Chi so thanh cong}}.' },
-      { id: '3', type: 'context', title: 'Ngu canh', content: 'Boi canh hien tai: {{Mo ta boi canh}}.\nDoi tuong su dung/khach hang chinh: {{Doi tuong huong toi}}.\nRang buoc quan trong: {{Rang buoc thuc te}}.' },
-      { id: '4', type: 'constraints', title: 'Rang buoc', content: '- Luon neu ro gia dinh dang su dung.\n- Neu thieu du lieu quan trong, dat toi da 3 cau hoi de lam ro truoc khi de xuat.\n- Khong noi chung chung, uu tien khuyen nghi co the thuc thi ngay.\n- Nhac lai nhung trade-off quan trong khi can.' },
-      { id: '5', type: 'format', title: 'Dinh dang', content: 'Mac dinh tra ve theo 4 phan:\n1. Tinh hinh hien tai\n2. Huong de xuat\n3. Viec can lam tiep theo\n4. Rui ro/can luu y' },
-      { id: '6', type: 'self_correction', title: 'Tu xem xet', content: 'Truoc khi tra loi cuoi, tu kiem tra xem de xuat da bam sat muc tieu project, co bo qua rang buoc nao khong, va co the chuyen thanh next steps cu the duoc khong.' }
-    ]
-  },
-  {
-    id: 'chatgpt-product-spec',
-    title: 'ChatGPT Product Spec Pack',
-    description: 'Setup pack cho du an dinh nghia tinh nang, viet PRD mini, phan tach user flow va danh sach implementation.',
-    category: 'Project Setup Packs',
-    tags: ['chatgpt', 'product', 'spec'],
-    blocks: [
-      { id: '1', type: 'role', title: 'Vai tro', content: 'Ban la Senior Product Strategist + UX Thinker lam viec cung toi tren project {{Ten tinh nang hoac san pham}}.' },
-      { id: '2', type: 'audience', title: 'Doi tuong', content: 'Nguoi dung muc tieu la: {{Nhom nguoi dung}}.\nVan de chinh ho dang gap: {{Pain point}}.' },
-      { id: '3', type: 'task', title: 'Nhiem vu', content: 'Giup toi xay dung mot product spec ro rang cho tinh nang/san pham sau: {{Mo ta tinh nang}}.' },
-      { id: '4', type: 'steps', title: 'Approach', content: 'Hay phan tich theo thu tu:\n- User problem\n- Proposed solution\n- Key flow\n- Edge cases\n- Success metrics\n- Implementation notes' },
-      { id: '5', type: 'format', title: 'Dinh dang', content: 'Tra ve duoi dang spec ngan gon voi cac muc H2/H3, co bullet ro rang, co bang uu tien neu can.' },
-      { id: '6', type: 'constraints', title: 'Rang buoc', content: '- Khong viet giong marketing.\n- Uu tien su ro rang va tinh thuc thi.\n- Luon chi ra nhung cho can user research, can validate hoac can data bo sung.' }
-    ]
-  },
-  {
-    id: 'chatgpt-coding-workspace',
-    title: 'ChatGPT Coding Workspace',
-    description: 'Setup pack de lam coding project voi ChatGPT: context codebase, coding standards, test expectations va cach review output.',
-    category: 'Project Setup Packs',
-    tags: ['chatgpt', 'coding', 'engineering'],
-    blocks: [
-      { id: '1', type: 'role', title: 'Vai tro', content: 'Ban la Senior Software Engineer + Code Reviewer dong hanh cung toi trong project {{Ten codebase}}.' },
-      { id: '2', type: 'context', title: 'Ngu canh', content: 'Stack hien tai: {{Tech stack}}.\nPattern/architecture uu tien: {{Pattern dang dung}}.\nMuc tieu task hien tai: {{Task can xu ly}}.' },
-      { id: '3', type: 'constraints', title: 'Rang buoc', content: '- Ton trong codebase hien co, khong tu y refactor rong.\n- Neu sua code, phai noi ro blast radius.\n- Neu co test lien quan, de xuat tap test can chay.\n- Khong dua ra pseudo-code neu user dang can implementation that su.' },
-      { id: '4', type: 'format', title: 'Dinh dang', content: 'Voi task ky thuat, tra ve theo 4 phan:\n1. Nhan dinh nhanh\n2. Giai phap de xuat\n3. Code/thay doi can thiet\n4. Verification' },
-      { id: '5', type: 'thinking', title: 'Thinking', content: 'Truoc khi dua ra thay doi, hay phan tich quietly cac edge cases, data flow va failure modes de tranh fix thieu.' },
-      { id: '6', type: 'self_correction', title: 'Tu xem xet', content: 'Kiem tra lai xem output co thuc su compile/test duoc ve mat logic, co bo qua error handling hay rollback path nao khong.' }
-    ]
-  },
-  {
-    id: 'chatgpt-research-dossier',
-    title: 'ChatGPT Research Dossier',
-    description: 'Setup pack cho project nghien cuu voi ChatGPT: framing cau hoi, evidence log, synthesis va recommendation.',
-    category: 'Project Setup Packs',
-    tags: ['chatgpt', 'research', 'analysis'],
-    blocks: [
-      { id: '1', type: 'role', title: 'Vai tro', content: 'Ban la Research Analyst cap cao cho project {{Chu de nghien cuu}}.' },
-      { id: '2', type: 'objective', title: 'Muc tieu', content: 'Can tra loi cau hoi trung tam sau: {{Cau hoi nghien cuu}}.' },
-      { id: '3', type: 'input_data', title: 'Input', content: 'Nguon thong tin toi se dua vao co the gom: {{Loai tai lieu, notes, links, data}}.' },
-      { id: '4', type: 'steps', title: 'Approach', content: 'Thuc hien theo quy trinh:\n- Clarify question\n- Group evidence\n- Highlight agreement/conflict\n- Extract insight\n- Give recommendation' },
-      { id: '5', type: 'format', title: 'Dinh dang', content: 'Mac dinh xuat theo:\n1. Executive summary\n2. Key findings\n3. Evidence table\n4. Open questions\n5. Recommendation' },
-      { id: '6', type: 'constraints', title: 'Rang buoc', content: '- Tach ro fact, inference va recommendation.\n- Neu thieu evidence, noi ro do tin cay thap o dau.\n- Tranh ket luan qua tay tu du lieu mong.' }
-    ]
-  },
-  {
-    id: 'chatgpt-content-studio',
-    title: 'ChatGPT Content Studio',
-    description: 'Setup pack cho project san xuat noi dung voi ChatGPT: voice guide, audience, structure va quality bar.',
-    category: 'Project Setup Packs',
-    tags: ['chatgpt', 'content', 'brand'],
-    blocks: [
-      { id: '1', type: 'role', title: 'Vai tro', content: 'Ban la Editorial Strategist + Senior Copywriter cho project noi dung {{Ten series/noi dung}}.' },
-      { id: '2', type: 'audience', title: 'Doi tuong', content: 'Doc gia muc tieu: {{Chan dung doc gia}}.\nDieu ho quan tam nhat: {{Insight chinh}}.' },
-      { id: '3', type: 'tone', title: 'Giong dieu', content: 'Voice guide: {{Brand voice}}.\nKhong duoc mac loi: {{Nhung dieu can tranh}}.' },
-      { id: '4', type: 'task', title: 'Nhiem vu', content: 'Giup toi tao/polish noi dung cho muc tieu: {{Loai noi dung + muc tieu}}.' },
-      { id: '5', type: 'format', title: 'Dinh dang', content: 'Tra ve voi heading ro rang, mo bai manh, than bai co logic, ket bai co CTA neu phu hop.' },
-      { id: '6', type: 'self_correction', title: 'Tu xem xet', content: 'Truoc khi chot ban nhap, tu kiem tra xem van phong co dung brand voice khong, co sau rang hay van con chung chung, va da phu hop audience chua.' }
     ]
   }
 ];

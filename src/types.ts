@@ -71,6 +71,8 @@ export interface PromptTemplate {
   metrics?: {
     usageCount: number;
     upvotes: number;
+    likes?: number; // Social likes
+    saves?: number; // Social saves/bookmarks
     averageRating?: number;
   };
   
@@ -82,4 +84,19 @@ export interface PromptTemplate {
   status?: 'Draft' | 'Published' | 'Archived';
   authorId?: string;
   authorName?: string;
+  authorAvatar?: string;
+  isVerified?: boolean;
+  
+  // Example output for the prompt card
+  outputExample?: {
+    type: 'text' | 'code' | 'ui' | 'video' | 'mindmap' | 'tutor';
+    title?: string;
+    description?: string;
+    content?: string;
+    input?: string;
+  };
+
+  // Social history
+  forkedFrom?: string; // ID of the prompt it was remixed from
+  createdAt?: string; // ISO date string
 }

@@ -1,19 +1,6 @@
-type GoogleGenAIType = typeof import('@google/genai').GoogleGenAI;
-type GoogleGenAIInstance = InstanceType<GoogleGenAIType>;
+import { GoogleGenAI } from "@google/genai";
 
-let _ai: GoogleGenAIInstance | null = null;
-
-async function getAI(): Promise<GoogleGenAIInstance> {
-  if (!_ai) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error('GEMINI_API_KEY chưa được cấu hình. Vui lòng tạo file .env và thêm API key hợp lệ từ Google AI Studio.');
-    }
-    const { GoogleGenAI } = await import('@google/genai');
-    _ai = new GoogleGenAI({ apiKey });
-  }
-  return _ai;
-}
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export type AiActionType = 'auto' | 'longer' | 'shorter' | 'professional' | 'casual' | 'fix_contradiction';
 
@@ -76,7 +63,6 @@ ${optimizedContext}
 Nội dung hiện tại cho [${blockTitle}]: "${currentText}".
 Sinh ra chính xác đoạn nội dung trực tiếp cần thiết để điền vào. KHÔNG GIẢI THÍCH, KHÔNG CHÀO HỎI.`;
 
-    const ai = await getAI();
     const responseStream = await ai.models.generateContentStream({
       model: 'gemini-3-flash-preview', // Update to faster model
       contents: currentText ? `Cải thiện đoạn: ${currentText}` : `Viết phần ${blockTitle}`,
@@ -118,7 +104,6 @@ KHÔNG MỞ ĐẦU, KHÔNG GIẢI THÍCH, KHÔNG FORMAT MARKDOWN LOẠI BỎ (\`
 
     const prompt = `Điền các biến sau: ${variablesToFill.join(', ')}`;
 
-    const ai = await getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3.1-pro-preview',
       contents: prompt,
@@ -174,7 +159,6 @@ Bạn trả về một JSON Object duy nhất:
 KHÔNG TRẢ VỀ BẤT KỲ GÌ KHÁC NGOÀI JSON OBJECT.
 Chỉ trả về các key tương ứng với ID của khối (block ID), nội dung được format dưới dạng Markdown hoặc văn bản cực kỳ chất lượng.`;
 
-    const ai = await getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3.1-pro-preview',
       contents: [
@@ -230,7 +214,6 @@ Người dùng vừa gửi một yêu cầu rất ngắn. Tuy nhiên, hệ thố
 `;
     }
 
-    const ai = await getAI();
     const responseStream = await ai.models.generateContentStream({
       model: 'gemini-3.1-pro-preview',
       contents: shortInput,
@@ -276,7 +259,6 @@ Trọng tâm: Cung cấp nội dung CHẤT LƯỢNG CAO, SẴN SÀNG SỬ DỤNG
 BẮT BUỘC trả về ĐÚNG ĐỊNH DẠNG JSON.
 KHÔNG MỞ ĐẦU, KHÔNG GIẢI THÍCH, KHÔNG FORMAT MARKDOWN.`;
 
-    const ai = await getAI();
     const response = await ai.models.generateContent({
       model: 'gemini-3.1-pro-preview',
       contents: `Hãy tạo nội dung cho các khối tương ứng để giải quyết nhiệm vụ: "${topic}"`,
@@ -292,6 +274,61 @@ KHÔNG MỞ ĐẦU, KHÔNG GIẢI THÍCH, KHÔNG FORMAT MARKDOWN.`;
     return JSON.parse(cleanedText);
   } catch (error) {
     console.error("AI Quick Fill failed:", error);
+    throw error;
+  }
+}
+
+export async function generateStructuredTemplateFromTopic(topic: string): Promise<any> {
+  try {
+    const systemInstruction = `Bạn là một chuyên gia Prompt Engineering đẳng cấp quốc tế.
+Nhiệm vụ của bạn là nhận vào chủ đề hoặc nhiệm vụ từ người dùng và xây dựng nên một cấu trúc Prompt chuyên nghiệp và tinh vi bậc nhất theo cấu trúc nhiều mảnh ghép (Multi-block Framework).
+
+Bạn phải chọn phân loại phù hợp nhất cho prompt này trong số: 'Học sinh/Sinh viên', 'Người đi làm', 'Sáng tạo nội dung', 'Phát triển cá nhân', 'Lập trình viên'.
+Tạo từ 3 đến 5 tags liên quan. Khối blocks gồm: role, task, context, constraints, format.
+
+Hãy trả về CHỈ MỘT JSON OBJECT khớp với định dạng cấu trúc sau:
+{
+  "title": "Tên Prompt ngắn gọn, thu hút (ví dụ: Chuyên gia sáng tạo kịch bản TikTok ngắn)",
+  "description": "Mô tả mục đích và cách sử dụng cấu trúc prompt này",
+  "category": "Chọn 1 trong các mục trên",
+  "tags": ["tag1", "tag2", "tag3"],
+  "blocks": [
+    { "type": "role", "title": "🎭 Vai trò (Role)", "content": "Khai báo vai trò chuyên gia có năng lực vượt trội phù hợp..." },
+    { "type": "task", "title": "🎯 Nhiệm vụ (Task)", "content": "Mô tả chi tiết và chính xác hành động cần thực hiện đối với chủ đề..." },
+    { "type": "context", "title": "📌 Bối cảnh (Context)", "content": "Cung cấp ngữ cảnh, tình huống thực tế hoặc thông tin nền..." },
+    { "type": "constraints", "title": "⚠️ Ràng buộc (Constraints)", "content": "Quy định quy chuẩn chặt chẽ, các điều cấm kỵ (ví dụ: Không dùng từ sáo rỗng, không dông dài)..." },
+    { "type": "format", "title": "📋 Định dạng cấu trúc (Format)", "content": "Cấu trúc hiển thị kết quả đầu ra rõ ràng, sắp xếp khoa học..." }
+  ]
+}
+
+BẮT BUỘC trả về ĐÚNG GIÁ TRỊ JSON cấu trúc như trên. KHÔNG bình luận, KHÔNG giải thích, KHÔNG bọc trong các ký tự markdown dư thừa.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3-flash-preview',
+      contents: `Hãy tạo một Framework Prompt cấu trúc hoàn hảo cho nhiệm vụ: "${topic}"`,
+      config: {
+        systemInstruction,
+        temperature: 0.7,
+        responseMimeType: "application/json"
+      }
+    });
+
+    const text = response.text || "{}";
+    const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const result = JSON.parse(cleanedText);
+    
+    // Assign random or generated unique IDs to blocks
+    if (result.blocks && Array.isArray(result.blocks)) {
+      result.blocks = result.blocks.map((b: any, idx: number) => ({
+        ...b,
+        id: `gen-block-${idx}-${Date.now()}`
+      }));
+    }
+    
+    result.id = `gen-tpl-${Date.now()}`;
+    return result;
+  } catch (error) {
+    console.error("AI instant builder from topic failed:", error);
     throw error;
   }
 }

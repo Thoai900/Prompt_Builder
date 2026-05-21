@@ -3,21 +3,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TabType, PromptTemplate, Workspace, AiPersona } from './types';
-import { Layers, Library, Sparkles, Home, LogIn, LogOut, Zap, Package } from 'lucide-react';
+import { Layers, Library, Sparkles, Home, LogIn, LogOut, Zap, Package, GraduationCap, Briefcase, Brain } from 'lucide-react';
+import LibraryTab from './components/LibraryTab';
+import BuilderTab from './components/BuilderTab';
+import EnhancerTab from './components/EnhancerTab';
 import HomeTab from './components/HomeTab';
-import ChatWidget from './components/chat/ChatWidget';
+import AIFutureTab from './components/AIFutureTab';
+import LearnTab from './components/LearnTab';
+import UtilityBeltTab from './components/UtilityBeltTab';
 import { auth, db, loginWithGoogle, logoutUser, handleFirestoreError } from './firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { collection, query, where, getDocs, setDoc, doc, serverTimestamp, getDocFromServer } from 'firebase/firestore';
-
-const BuilderTab = lazy(() => import('./components/BuilderTab'));
-const LibraryTab = lazy(() => import('./components/LibraryTab'));
-const EnhancerTab = lazy(() => import('./components/EnhancerTab'));
-const LearnTab = lazy(() => import('./components/LearnTab'));
-const UtilityBeltTab = lazy(() => import('./components/UtilityBeltTab'));
-const AIFutureTab = lazy(() => import('./components/AIFutureTab'));
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('home');
@@ -173,7 +171,11 @@ export default function App() {
   return (
     <>
       <div className={activeTab === 'home' ? 'w-full h-full flex flex-col flex-1' : 'hidden'}>
-        <HomeTab onStart={() => setActiveTab('builder')} />
+        <HomeTab 
+          onSelectTemplate={handleSelectTemplate} 
+          onSaveTemplate={handleSaveTemplate} 
+          user={user} 
+        />
       </div>
 
       <div className={`${activeTab === 'home' ? 'hidden' : 'flex'} flex-col flex-1 h-full w-full bg-slate-50 text-slate-900 font-sans overflow-hidden md:flex-row`}>
@@ -203,83 +205,103 @@ export default function App() {
             icon={<Home size={18} />} 
             label="Home" 
             isActive={activeTab === 'home'} 
-            onClick={() => setActiveTab('home')} 
+            onClick={() => setActiveTab('home')}
+            activeColorClass="bg-slate-100 text-slate-800 border-slate-200"
+            iconColorClass="text-slate-400"
           />
           <NavItem 
-            icon={<Layers size={18} />} 
-            label="The Workshop" 
+            icon={<Briefcase size={18} />} 
+            label="Công sở" 
             isActive={activeTab === 'builder'} 
-            onClick={() => setActiveTab('builder')} 
+            onClick={() => setActiveTab('builder')}
+            activeColorClass="bg-amber-50 text-amber-700 border-amber-100"
+            iconColorClass="text-amber-500"
           />
           <NavItem 
-            icon={<Zap size={18} className="text-amber-500" />} 
+            icon={<Zap size={18} />} 
             label="The Utility Belt" 
             isActive={activeTab === 'utilitybelt'} 
-            onClick={() => setActiveTab('utilitybelt')} 
+            onClick={() => setActiveTab('utilitybelt')}
+            activeColorClass="bg-orange-50 text-orange-700 border-orange-100"
+            iconColorClass="text-orange-500"
           />
           <NavItem 
             icon={<Library size={18} />} 
             label="Template Library" 
             isActive={activeTab === 'library'} 
-            onClick={() => setActiveTab('library')} 
+            onClick={() => setActiveTab('library')}
+            activeColorClass="bg-emerald-50 text-emerald-700 border-emerald-100"
+            iconColorClass="text-emerald-500"
           />
           <NavItem 
             icon={<Sparkles size={18} />} 
             label="AI Enhancer" 
             isActive={activeTab === 'enhancer'} 
-            onClick={() => setActiveTab('enhancer')} 
+            onClick={() => setActiveTab('enhancer')}
+            activeColorClass="bg-teal-50 text-teal-700 border-teal-100"
+            iconColorClass="text-teal-500"
           />
           <NavItem 
-            icon={<Layers size={18} />} 
+            icon={<GraduationCap size={18} />} 
             label="Học Tập" 
             isActive={activeTab === 'learn'} 
-            onClick={() => setActiveTab('learn')} 
+            onClick={() => setActiveTab('learn')}
+            activeColorClass="bg-blue-50 text-blue-700 border-blue-100"
+            iconColorClass="text-blue-500"
           />
           <NavItem 
-            icon={<Sparkles size={18} />} 
+            icon={<Brain size={18} />} 
             label="AI and Future" 
             isActive={activeTab === 'aifuture'} 
-            onClick={() => setActiveTab('aifuture')} 
+            onClick={() => setActiveTab('aifuture')}
+            activeColorClass="bg-purple-50 text-purple-700 border-purple-100"
+            iconColorClass="text-purple-500"
           />
         </div>
 
         {/* Mobile Nav */}
-        <div className="flex items-center gap-1 md:hidden">
+        <div className="flex items-center gap-1.5 md:hidden overflow-x-auto pb-1 max-w-full">
              <button 
                 onClick={() => setActiveTab('builder')}
-                className={`p-2 rounded-lg touch-manipulation ${activeTab === 'builder' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`p-2 rounded-xl touch-manipulation transition-all border ${activeTab === 'builder' ? 'bg-amber-50 text-amber-700 border-amber-100 shadow-sm' : 'text-slate-500 border-transparent hover:bg-slate-50'}`}
+                title="Công sở"
              >
-                <Layers size={20} />
+                <Briefcase size={18} className={activeTab === 'builder' ? 'text-amber-700' : 'text-amber-500'} />
              </button>
              <button 
                 onClick={() => setActiveTab('utilitybelt')}
-                className={`p-2 rounded-lg touch-manipulation ${activeTab === 'utilitybelt' ? 'bg-amber-50 text-amber-600' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`p-2 rounded-xl touch-manipulation transition-all border ${activeTab === 'utilitybelt' ? 'bg-orange-50 text-orange-700 border-orange-100 shadow-sm' : 'text-slate-500 border-transparent hover:bg-slate-50'}`}
+                title="The Utility Belt"
              >
-                <Zap size={20} />
+                <Zap size={18} className={activeTab === 'utilitybelt' ? 'text-orange-700' : 'text-orange-500'} />
              </button>
              <button 
                 onClick={() => setActiveTab('library')}
-                className={`p-2 rounded-lg touch-manipulation ${activeTab === 'library' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`p-2 rounded-xl touch-manipulation transition-all border ${activeTab === 'library' ? 'bg-emerald-50 text-emerald-700 border-emerald-100 shadow-sm' : 'text-slate-500 border-transparent hover:bg-slate-50'}`}
+                title="Template Library"
              >
-                <Library size={20} />
+                <Library size={18} className={activeTab === 'library' ? 'text-emerald-700' : 'text-emerald-500'} />
              </button>
              <button 
                 onClick={() => setActiveTab('enhancer')}
-                className={`p-2 rounded-lg touch-manipulation ${activeTab === 'enhancer' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`p-2 rounded-xl touch-manipulation transition-all border ${activeTab === 'enhancer' ? 'bg-teal-50 text-teal-700 border-teal-100 shadow-sm' : 'text-slate-500 border-transparent hover:bg-slate-50'}`}
+                title="AI Enhancer"
              >
-                <Sparkles size={20} />
+                <Sparkles size={18} className={activeTab === 'enhancer' ? 'text-teal-700' : 'text-teal-500'} />
              </button>
              <button 
                 onClick={() => setActiveTab('learn')}
-                className={`p-2 rounded-lg touch-manipulation ${activeTab === 'learn' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`p-2 rounded-xl touch-manipulation transition-all border ${activeTab === 'learn' ? 'bg-blue-50 text-blue-700 border-blue-100 shadow-sm' : 'text-slate-500 border-transparent hover:bg-slate-50'}`}
+                title="Học Tập"
              >
-                <Layers size={20} />
+                <GraduationCap size={18} className={activeTab === 'learn' ? 'text-blue-700' : 'text-blue-500'} />
              </button>
              <button 
                 onClick={() => setActiveTab('aifuture')}
-                className={`p-2 rounded-lg touch-manipulation ${activeTab === 'aifuture' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500 hover:bg-slate-50'}`}
+                className={`p-2 rounded-xl touch-manipulation transition-all border ${activeTab === 'aifuture' ? 'bg-purple-50 text-purple-700 border-purple-100 shadow-sm' : 'text-slate-500 border-transparent hover:bg-slate-50'}`}
+                title="AI and Future"
              >
-                <Sparkles size={20} />
+                <Brain size={18} className={activeTab === 'aifuture' ? 'text-purple-700' : 'text-purple-500'} />
              </button>
         </div>
         
@@ -313,94 +335,57 @@ export default function App() {
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col relative bg-slate-50 w-full h-full overflow-hidden">
         <div className={activeTab === 'builder' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <Suspense fallback={<TabSurfaceSkeleton />}>
-            <BuilderTab initialTemplate={loadedTemplate} personas={personas} activePersonaId={activePersonaId} setActivePersonaId={setActivePersonaId} onSaveTemplate={handleSaveTemplate} />
-          </Suspense>
+          <BuilderTab initialTemplate={loadedTemplate} personas={personas} activePersonaId={activePersonaId} setActivePersonaId={setActivePersonaId} onSaveTemplate={handleSaveTemplate} />
         </div>
         <div className={activeTab === 'library' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <Suspense fallback={<TabSurfaceSkeleton />}>
-            <LibraryTab onSelectTemplate={handleSelectTemplate} customTemplates={customTemplates} />
-          </Suspense>
+          <LibraryTab onSelectTemplate={handleSelectTemplate} customTemplates={customTemplates} />
         </div>
         <div className={activeTab === 'enhancer' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <Suspense fallback={<TabSurfaceSkeleton />}>
-            <EnhancerTab onApplyTemplate={handleSelectTemplate} />
-          </Suspense>
+          <EnhancerTab onApplyTemplate={handleSelectTemplate} />
         </div>
         <div className={activeTab === 'learn' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <Suspense fallback={<TabSurfaceSkeleton />}>
-            <LearnTab />
-          </Suspense>
+          <LearnTab />
         </div>
         <div className={activeTab === 'aifuture' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <Suspense fallback={<AIFutureTabSkeleton />}>
-            <AIFutureTab />
-          </Suspense>
+          <AIFutureTab />
         </div>
         <div className={activeTab === 'utilitybelt' ? 'flex-1 flex flex-col h-full w-full overflow-hidden' : 'hidden'}>
-          <Suspense fallback={<TabSurfaceSkeleton />}>
-            <UtilityBeltTab user={user} onSaveTemplate={handleSaveTemplate} />
-          </Suspense>
+          <UtilityBeltTab user={user} onSaveTemplate={handleSaveTemplate} />
         </div>
       </main>
     </div>
-    <ChatWidget />
     </>
   );
 }
 
-function AIFutureTabSkeleton() {
-  return (
-    <div className="h-full w-full overflow-hidden bg-[#07111f] p-4 md:p-6">
-      <div className="h-full w-full animate-pulse overflow-y-auto rounded-[28px] border border-white/10 bg-white/5 p-5 md:p-6">
-        <div className="grid gap-6 xl:grid-cols-[1.25fr_0.75fr]">
-          <div className="space-y-4">
-            <div className="h-8 w-40 rounded-full bg-white/10" />
-            <div className="h-16 max-w-3xl rounded-3xl bg-white/10" />
-            <div className="h-6 max-w-2xl rounded-3xl bg-white/8" />
-            <div className="grid gap-4 sm:grid-cols-3">
-              {[0, 1, 2].map((item) => (
-                <div key={item} className="h-36 rounded-[22px] bg-white/8" />
-              ))}
-            </div>
-          </div>
-          <div className="h-[320px] rounded-[24px] bg-white/8" />
-        </div>
-        <div className="mt-6 grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
-          <div className="h-[480px] rounded-[24px] bg-white/8" />
-          <div className="h-[480px] rounded-[24px] bg-white/8" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TabSurfaceSkeleton() {
-  return (
-    <div className="h-full w-full animate-pulse overflow-hidden bg-slate-50 p-4 md:p-6">
-      <div className="grid h-full gap-4 md:grid-cols-[280px_1fr]">
-        <div className="rounded-3xl bg-white" />
-        <div className="grid gap-4">
-          <div className="h-20 rounded-3xl bg-white" />
-          <div className="flex-1 rounded-3xl bg-white" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function NavItem({ icon, label, isActive, onClick }: { icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void }) {
+function NavItem({ 
+  icon, 
+  label, 
+  isActive, 
+  onClick,
+  activeColorClass = 'bg-emerald-50 text-emerald-700 font-bold',
+  iconColorClass = 'text-slate-400'
+}: { 
+  icon: React.ReactNode, 
+  label: string, 
+  isActive: boolean, 
+  onClick: () => void,
+  activeColorClass?: string,
+  iconColorClass?: string
+}) {
   return (
     <button
       onClick={onClick}
-      className={`w-full flex items-center space-x-3 px-3 py-2 rounded-md transition-colors text-xs font-medium
+      className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl transition-all duration-200 text-xs font-semibold border border-transparent
         ${isActive 
-          ? 'bg-emerald-50 text-emerald-700' 
+          ? `${activeColorClass} shadow-sm font-bold` 
           : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 cursor-pointer'
         }
       `}
     >
-      <span className={isActive ? 'text-emerald-600' : 'text-slate-400'}>{icon}</span>
+      <span className={`transition-transform duration-200 ${isActive ? 'scale-110' : iconColorClass}`}>
+        {icon}
+      </span>
       <span>{label}</span>
     </button>
   );
